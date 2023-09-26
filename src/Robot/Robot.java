@@ -14,7 +14,7 @@ import lejos.robotics.chassis.WheeledChassis;
 public class Robot {
 
 	private static final int WHEEL_DIAMETER= 56;
-	private static final int WHEEL_OFFSET_VALUE= 56;
+	private static final float WHEEL_OFFSET_VALUE = 61.5f;
 	
 	private Brick brick;
 	
