@@ -98,4 +98,71 @@ public class ColorSensor extends EV3ColorSensor {
 		}
 		return "UNKNOWN";
 	}
+
+	/**
+	 * Checks if the color passed as a parameter is the detected color.
+	 *
+	 * @param colorName The name of the color
+	 * @return true if colorName is the detected color, otherwise false.
+	 */
+	private boolean isDetecte(String colorName) {
+		return getDetectedColor().equals(colorName);
+	}
+
+	/**
+	 * Checks if red color is detected.
+	 *
+	 * @return true if red color is detected, otherwise false.
+	 */
+	public boolean isRedDetected() {
+		return isDetecte(COLOR_NAMES[0]);
+	}
+	/**
+	 * Checks if green color is detected.
+	 *
+	 * @return true if green color is detected, otherwise false.
+	 */
+	public boolean isGreenDetected() {
+		return isDetecte(COLOR_NAMES[1]);
+	}
+	/**
+	 * Checks if blue color is detected.
+	 *
+	 * @return true if blue color is detected, otherwise false.
+	 */
+	public boolean isBlueDetected() {
+		return isDetecte(COLOR_NAMES[2]);
+	}
+	/**
+	 * Checks if yellow color is detected.
+	 *
+	 * @return true if yellow color is detected, otherwise false.
+	 */
+	public boolean isYellowDetected() {
+		return isDetecte(COLOR_NAMES[3]);
+	}
+	/**
+	 * Checks if black color is detected.
+	 *
+	 * @return true if black color is detected, otherwise false.
+	 */
+	public boolean isBlackDetected() {
+		return isDetecte(COLOR_NAMES[4]);
+	}
+	/**
+	 * Checks if gray color is detected.
+	 *
+	 * @return true if gray color is detected, otherwise false.
+	 */
+	public boolean isGrayDetected() {
+		return isDetecte(COLOR_NAMES[5]);
+	}
+	/**
+	 * Checks if white color is detected.
+	 *
+	 * @return true if white color is detected, otherwise false.
+	 */
+	public boolean isWhiteDetected() {
+		return isDetecte(COLOR_NAMES[6]);
+	}
 }
