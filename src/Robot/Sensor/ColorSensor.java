@@ -2,67 +2,61 @@ package Robot.Sensor;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.HashMap;
+import java.util.Map;
 
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
 
 public class ColorSensor extends EV3ColorSensor {
 
-	private static final String RED = "RED";
-	private static final int[] RED_RGB;
-	private static final String GREEN = "GREEN";
-	private static final int[] GREEN_RGB;
-	private static final String BLUE = "BLUE";
-	private static final int[] BLUE_RGB;
-	private static final String YELLOW = "YELLOW";
-	private static final int[] YELLOW_RGB;
-	private static final String BLACK = "BLACK";
-	private static final int[] BLACK_RGB;
-	private static final String WHITE = "WHITE";
-	private static final int[] WHITE_RGB;
+	private static final String[] COLOR_NAMES = new String[] {"RED","GREEN","BLUE","YELLOW","BLACK","WHITE"}; 
+	private static final Map<String, int[]> COLORS = new HashMap<>();
 
+	private static final String calibratedColorsFileName = "colors.txt";
+	
 	/**
 	 * Instantiates the RGB color values with those saved in the colors.txt file
 	 */
 	static {
 		String[][] rgv_value = new String[6][];
 		try{
-			BufferedReader br = new BufferedReader(new FileReader("color.txt"));
+			BufferedReader br = new BufferedReader(new FileReader(calibratedColorsFileName));
 			String line;
 			for(int i = 0; (line = br.readLine()) != null; i++)
 				rgv_value[i] = line.split(";");
 			br.close();
 		} catch (Exception e) { e.printStackTrace(); }
-		RED_RGB = new int[] {
+		COLORS.put("RED", new int[] {
 				Integer.parseInt(rgv_value[0][0]),
 				Integer.parseInt(rgv_value[0][1]),
 				Integer.parseInt(rgv_value[0][2])
-		};
-		GREEN_RGB = new int[] {
+		});
+		COLORS.put("GREEN", new int[] {
 				Integer.parseInt(rgv_value[1][0]),
 				Integer.parseInt(rgv_value[1][1]),
 				Integer.parseInt(rgv_value[1][2])
-		};
-		BLUE_RGB = new int[] {
+		});
+		COLORS.put("BLUE", new int[] {
 				Integer.parseInt(rgv_value[2][0]),
 				Integer.parseInt(rgv_value[2][1]),
 				Integer.parseInt(rgv_value[2][2])
-		};
-		YELLOW_RGB = new int[] {
+		});
+		COLORS.put("YELLOW", new int[] {
 				Integer.parseInt(rgv_value[3][0]),
 				Integer.parseInt(rgv_value[3][1]),
 				Integer.parseInt(rgv_value[3][2])
-		};
-		BLACK_RGB = new int[] {
+		});
+		COLORS.put("BLACK", new int[] {
 				Integer.parseInt(rgv_value[4][0]),
 				Integer.parseInt(rgv_value[4][1]),
 				Integer.parseInt(rgv_value[4][2])
-		};
-		WHITE_RGB = new int[] {
+		});
+		COLORS.put("WHITE", new int[] {
 				Integer.parseInt(rgv_value[5][0]),
 				Integer.parseInt(rgv_value[5][1]),
 				Integer.parseInt(rgv_value[5][2])
-		};
+		});
 	}
 
 	public ColorSensor(Port p) {
