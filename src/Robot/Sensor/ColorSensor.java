@@ -1,6 +1,7 @@
 package Robot.Sensor;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,9 +20,13 @@ public class ColorSensor extends EV3ColorSensor {
 	 * Instantiates the RGB color values with those saved in the colors.txt file
 	 */
 	static {
+		File file = new File(calibratedColorsFileName);
+		if(!file.exists())
+			throw new RuntimeException("Cannot initialize Map<String, int[]> COLORS from ColorSensor because colors.txt file is not found.");
+		
 		String[][] rgv_value = new String[7][];
 		try{
-			BufferedReader br = new BufferedReader(new FileReader(calibratedColorsFileName));
+			BufferedReader br = new BufferedReader(new FileReader(file));
 			String line;
 			for(int i = 0; (line = br.readLine()) != null; i++)
 				rgv_value[i] = line.split(";");
