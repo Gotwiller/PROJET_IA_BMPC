@@ -10,7 +10,7 @@ import lejos.hardware.sensor.EV3ColorSensor;
 
 public class ColorSensor extends EV3ColorSensor {
 
-	private static final String[] COLOR_NAMES = new String[] {"RED","GREEN","BLUE","YELLOW","BLACK","WHITE"}; 
+	private static final String[] COLOR_NAMES = new String[] {"RED","GREEN","BLUE","YELLOW","BLACK","GRAY","WHITE"}; 
 	private static final Map<String, int[]> COLORS = new HashMap<>();
 
 	private static final String calibratedColorsFileName = "colors.txt";
@@ -19,7 +19,7 @@ public class ColorSensor extends EV3ColorSensor {
 	 * Instantiates the RGB color values with those saved in the colors.txt file
 	 */
 	static {
-		String[][] rgv_value = new String[6][];
+		String[][] rgv_value = new String[7][];
 		try{
 			BufferedReader br = new BufferedReader(new FileReader(calibratedColorsFileName));
 			String line;
@@ -52,10 +52,16 @@ public class ColorSensor extends EV3ColorSensor {
 				Integer.parseInt(rgv_value[4][1]),
 				Integer.parseInt(rgv_value[4][2])
 		});
-		COLORS.put("WHITE", new int[] {
+
+		COLORS.put("GRAY", new int[] {
 				Integer.parseInt(rgv_value[5][0]),
 				Integer.parseInt(rgv_value[5][1]),
 				Integer.parseInt(rgv_value[5][2])
+		});
+		COLORS.put("WHITE", new int[] {
+				Integer.parseInt(rgv_value[6][0]),
+				Integer.parseInt(rgv_value[6][1]),
+				Integer.parseInt(rgv_value[6][2])
 		});
 	}
 
