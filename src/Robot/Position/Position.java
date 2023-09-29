@@ -35,4 +35,20 @@ public class Position {
 		else 
 			y = BLACK_Y_LINE;
 	}
+
+	/**
+	 * Return the value of the angle to do to back at the home.
+	 * 
+	 * @return positive = left, negative = right
+	 */
+	public int calculateAngleToReturnHome() {
+		if(home == 'g') return 180-direction;
+		if(direction > 180) return 360-direction;
+		return -direction;
+	}
+
+	public int getX() { return x; }
+	public int getY() { return y; }
+	public int getDirection() { return direction; }
+	public char getHome() { return home; }
 }
