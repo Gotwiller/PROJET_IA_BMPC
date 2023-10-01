@@ -51,4 +51,42 @@ public class Position {
 	public int getY() { return y; }
 	public int getDirection() { return direction; }
 	public char getHome() { return home; }
+	
+	/**
+	 * Performs a rotation operation on the current direction by the specified angle.
+	 * 
+	 * @param angle The angle in ° 
+	 */
+	public void rotationPerformed(int angle) {
+		direction += angle;
+		direction %= 360;
+	}
+	
+	/**
+	 * Calculates the expected distance from the UltrasonSensor depending on the direction and x y coordinates.
+	 * 
+	 * @return The expected distance in millimeters.
+	 */
+	public int getExpectedDistance() {
+		double teta_0 = Math.toRadians(direction%90);
+		int o,a;
+		if(direction < 90) {
+			o = 2000-y;
+			a = 3000-x;
+		} else if(direction < 180) {
+			o = x;
+			a = 2000-y;
+		} else if(direction < 270) {
+			o = y;
+			a = x;
+		} else {
+			o = 3000-x;
+			a = y;
+		}
+		if(teta_0 > Math.atan(o*1.0/a))
+			teta_0 = Math.PI/2-teta_0;
+		else
+			o = a;
+		return (int)(o/Math.cos(teta_0));
+	}
 }
