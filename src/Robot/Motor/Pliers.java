@@ -18,6 +18,6 @@ public class Pliers extends EV3LargeRegulatedMotor {
 		return 
 	}
 	public boolean isOpen() {
-		return
+		return 
 	}
 }
