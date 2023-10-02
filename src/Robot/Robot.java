@@ -1,5 +1,9 @@
 package Robot;
 
+import java.lang.Thread;
+
+
+import lejos.hardware.lcd.LCD;
 import Robot.Motor.CustomWheelsChassis;
 import Robot.Motor.Pliers;
 import Robot.Sensor.ColorSensor;
@@ -10,8 +14,15 @@ import lejos.hardware.BrickFinder;
 import lejos.hardware.motor.Motor;
 import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
+import lejos.hardware.port.Port;
+import lejos.hardware.port.SensorPort;
+
+
+
 
 public class Robot {
+	
+	
 
 	private static final int WHEEL_DIAMETER= 56;
 	private static final float WHEEL_OFFSET_VALUE = 61.5f;
@@ -34,18 +45,34 @@ public class Robot {
         wheels = new CustomWheelsChassis(new Wheel[]{leftWheel, rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
         pliers = new Pliers(brick.getPort("A"));
 
-        colorSensor = new ColorSensor(brick.getPort("1"));		// TODO : Put the correct port name
-        touchSensor = new TouchSensor(brick.getPort("2"));		// TODO : Put the correct port name
-        ultrasonSensor = new UltrasonSensor(brick.getPort("3"));// TODO : Put the correct port name
+        colorSensor = new ColorSensor(SensorPort.S1);	   
+        touchSensor = new TouchSensor(SensorPort.S2);		
+        ultrasonSensor = new UltrasonSensor(SensorPort.S3); 
+        
+       
+        
 	}
+				
+				  
 
-	public void start() {
+	public boolean isWhite() {
+	    ColorSensor cs = new ColorSensor(SensorPort.S3);
+	    cs.setFloodlight(false);
+	    if (cs.isWhiteDetected()) {            
+	      return true;
+	    }     
+	    else
+	    return false;           
+	    }
+	
+
+	private void start() {
+		
 		
 	}
-	public void test() {
-		pliers.close();
-		while (pliers.isMoving()) {}
-		pliers.open();
+
+
+   	
+        
 	}
-}
 	
