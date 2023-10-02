@@ -4,22 +4,35 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.port.Port;
 
 public class Pliers extends EV3LargeRegulatedMotor {
-	
+	boolean closed = true;
 	public Pliers(Port p) {
 		super(p);
 	}
 
 	public void open () {
-		this.rotate(360*2);
+		if (isOpen()==false) {
+			this.rotate(360*2);
+			closed = false;
+		}
 	}	
 	public void close() {
-		this.rotate(-360*2);
-	}
-	public boolean isClose() {
-		return true;
+
+		if (isClose()==false) {
+			this.rotate(-360*2);
+			closed = true;
+		}
 	}
 	public boolean isOpen() {
-		return true;
+		if (closed==true) {
+			return false;
+		}
+		else return true;
+	}
+	public boolean isClose() {
+		if (closed==false) {
+			return false;
+		}
+		else return true;
 	}
 }
 
