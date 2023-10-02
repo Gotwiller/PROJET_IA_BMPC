@@ -10,7 +10,7 @@ public class Pliers extends EV3LargeRegulatedMotor {
 	}
 	
 	public void open() {
-		this.rotate(360*2);
+		this.rotate(360*20);
 	}
 	
 	
