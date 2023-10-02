@@ -39,4 +39,13 @@ public class Robot {
         ultrasonSensor = new UltrasonSensor(brick.getPort("3"));// TODO : Put the correct port name
 	}
 
+	public void start() {
+		
+	}
+	public void test() {
+		pliers.close();
+		while (pliers.isMoving()) {}
+		pliers.open();
+	}
 }
+	

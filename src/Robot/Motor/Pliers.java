@@ -8,13 +8,27 @@ public class Pliers extends EV3LargeRegulatedMotor {
 	public Pliers(Port p) {
 		super(p);
 	}
-	public void open () {
+	public void open() {
+		open(false);
+	}	
+	public void open(boolean force) {
+		if (force==true) {
+			this.rotate(360*2);
+			closed = false;
+		}
 		if (isOpen()==false) {
 			this.rotate(360*2);
 			closed = false;
 		}
-	}	
+	}
 	public void close() {
+		close(false);
+	}	
+	public void close(boolean force) {
+		if (force==true) {
+			this.rotate(-360*2);
+			closed = true;
+		}
 		if (isClose()==false) {
 			this.rotate(-360*2);
 			closed = true;
