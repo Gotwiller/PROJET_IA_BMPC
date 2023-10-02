@@ -48,11 +48,7 @@ public class Robot {
         colorSensor = new ColorSensor(SensorPort.S1);	   
         touchSensor = new TouchSensor(SensorPort.S2);		
         ultrasonSensor = new UltrasonSensor(SensorPort.S3); 
-        
-       
-        
 	}
-				
 				  
 
 	public boolean isWhite() {
@@ -69,6 +65,12 @@ public class Robot {
 	private void start() {
 		
 		
+	}
+	
+	public void test() {
+		pliers.close(true);
+		while(pliers.isMoving()) {}
+		pliers.open();
 	}
 
 
