@@ -8,11 +8,12 @@ import java.util.Map;
 
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.robotics.Color;
 
 public class ColorSensor extends EV3ColorSensor {
 
-	private static final String[] COLOR_NAMES = new String[] {"RED","GREEN","BLUE","YELLOW","BLACK","GRAY","WHITE"}; 
-	private static final Map<String, int[]> COLORS = new HashMap<>();
+	private static final int[] COLOR_NAMES = new int[] {Color.RED,Color.GREEN,Color.BLUE,Color.YELLOW,Color.BLACK,Color.GRAY,Color.WHITE}; 
+	private static final Map<Integer, int[]> COLORS = new HashMap<>();
 
 	private static final String calibratedColorsFileName = "colors.txt";
 	private static final int RGB_TOLERANCE = 45;
@@ -33,37 +34,37 @@ public class ColorSensor extends EV3ColorSensor {
 				rgv_value[i] = line.split(";");
 			br.close();
 		} catch (Exception e) { e.printStackTrace(); }
-		COLORS.put("RED", new int[] {
+		COLORS.put(Color.RED, new int[] {
 				Integer.parseInt(rgv_value[0][0]),
 				Integer.parseInt(rgv_value[0][1]),
 				Integer.parseInt(rgv_value[0][2])
 		});
-		COLORS.put("GREEN", new int[] {
+		COLORS.put(Color.GREEN, new int[] {
 				Integer.parseInt(rgv_value[1][0]),
 				Integer.parseInt(rgv_value[1][1]),
 				Integer.parseInt(rgv_value[1][2])
 		});
-		COLORS.put("BLUE", new int[] {
+		COLORS.put(Color.BLUE, new int[] {
 				Integer.parseInt(rgv_value[2][0]),
 				Integer.parseInt(rgv_value[2][1]),
 				Integer.parseInt(rgv_value[2][2])
 		});
-		COLORS.put("YELLOW", new int[] {
+		COLORS.put(Color.YELLOW, new int[] {
 				Integer.parseInt(rgv_value[3][0]),
 				Integer.parseInt(rgv_value[3][1]),
 				Integer.parseInt(rgv_value[3][2])
 		});
-		COLORS.put("BLACK", new int[] {
+		COLORS.put(Color.BLACK, new int[] {
 				Integer.parseInt(rgv_value[4][0]),
 				Integer.parseInt(rgv_value[4][1]),
 				Integer.parseInt(rgv_value[4][2])
 		});
-		COLORS.put("GRAY", new int[] {
+		COLORS.put(Color.GRAY, new int[] {
 				Integer.parseInt(rgv_value[5][0]),
 				Integer.parseInt(rgv_value[5][1]),
 				Integer.parseInt(rgv_value[5][2])
 		});
-		COLORS.put("WHITE", new int[] {
+		COLORS.put(Color.WHITE, new int[] {
 				Integer.parseInt(rgv_value[6][0]),
 				Integer.parseInt(rgv_value[6][1]),
 				Integer.parseInt(rgv_value[6][2])
@@ -77,9 +78,9 @@ public class ColorSensor extends EV3ColorSensor {
 	/**
 	 * Get the name of the color detected.<p>
 	 * 
-	 * @return RED, GREEN, BLUE, YELLOW, BLACk, GRAY, WHITE, UNKNOWN
+	 * @return RED, GREEN, BLUE, YELLOW, BLACk, GRAY, WHITE value. UNKNOWN = -1 
 	 */
-	public String getDetectedColor() {
+	public int getDetectedColor() {
 		float[] rgb = new float[3];
 		this.getRGBMode().fetchSample(rgb, 0);
 
@@ -96,7 +97,7 @@ public class ColorSensor extends EV3ColorSensor {
 					calibatedColor[2]-RGB_TOLERANCE < rgb[2] && rgb[2] < calibatedColor[2]+RGB_TOLERANCE 	)
 				return COLOR_NAMES[i];
 		}
-		return "UNKNOWN";
+		return -1;
 	}
 
 	/**
@@ -105,8 +106,8 @@ public class ColorSensor extends EV3ColorSensor {
 	 * @param colorName The name of the color
 	 * @return true if colorName is the detected color, otherwise false.
 	 */
-	private boolean isDetecte(String colorName) {
-		return getDetectedColor().equals(colorName);
+	private boolean isDetecte(int color) {
+		return getDetectedColor() == (color);
 	}
 
 	/**
