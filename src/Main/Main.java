@@ -1,6 +1,5 @@
 package Main;
 
-import Robot.Robot;
 import lejos.hardware.Button;
 import lejos.hardware.lcd.LCD;
 
@@ -60,7 +59,6 @@ public class Main {
 			else if (button == Button.ID_UP)
 				choix = choix==0?nbChoix-1:choix-1;        
 		} while(button != Button.ID_ENTER && button != Button.ID_ESCAPE);
-		if(button == Button.ID_ESCAPE) break;
 
 		// Open / Close pliers
 		if(choix == 0) {
