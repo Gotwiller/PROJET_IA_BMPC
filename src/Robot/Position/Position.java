@@ -51,7 +51,7 @@ public class Position {
 	public int getY() { return y; }
 	public int getDirection() { return direction; }
 	public char getHome() { return home; }
-	
+
 	/**
 	 * Performs a rotation operation on the current direction by the specified angle.
 	 * 
@@ -61,9 +61,9 @@ public class Position {
 		direction += angle;
 		direction %= 360;
 	}
-	
+
 	/**
-	 * Calculates the expected distance from the UltrasonSensor depending on the direction and x y coordinates.
+	 * Calculates the expected distance from the UltrasonSensor depending on the direction and x y coordinates. The white line is considered as a wall : behind this line there may be pucks that we sould'n go tack
 	 * 
 	 * @return The expected distance in millimeters.
 	 */
@@ -72,15 +72,15 @@ public class Position {
 		int o,a;
 		if(direction < 90) {
 			o = 2000-y;
-			a = 3000-x;
+			a = 2700-x;
 		} else if(direction < 180) {
-			o = x;
+			o = x-300;
 			a = 2000-y;
 		} else if(direction < 270) {
 			o = y;
-			a = x;
+			a = x-300;
 		} else {
-			o = 3000-x;
+			o = 2700-x;
 			a = y;
 		}
 		if(teta_0 > Math.atan(o*1.0/a))
