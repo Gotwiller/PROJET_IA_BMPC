@@ -1,5 +1,7 @@
 package Robot.Position;
 
+import Robot.Robot;
+
 public class Position {
 
 	private static final int YELLOW_LINE = 500;
@@ -89,4 +91,18 @@ public class Position {
 			o = a;
 		return (int)(o/Math.cos(teta_0));
 	}
+
+	/**
+	 * Updates the position. Works only for straight line travel. The robot must not do rotation. 
+	 * 
+	 * @param linearSpeed In millimeters per seconds
+	 * @param time Time in milliseconds since the last update.
+	 */
+    public void update(double linearSpeed, long time) {
+        double distance = linearSpeed*time/1000;
+        double theta = Math.toRadians(direction);
+
+        x += distance*Math.cos(theta);
+        y += distance*Math.sin(theta);
+    }
 }
