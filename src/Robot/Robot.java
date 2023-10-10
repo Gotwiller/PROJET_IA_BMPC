@@ -17,8 +17,10 @@ import lejos.robotics.chassis.WheeledChassis;
 
 public class Robot {
 
-	private static final int WHEEL_DIAMETER= 56;
-	private static final float WHEEL_OFFSET_VALUE = 61.5f;
+	public static final int WHEEL_DIAMETER= 56;
+	public static final float WHEEL_OFFSET_VALUE = 61.5f;
+	public static final int ACCEPTED_DISTANCE_ERROR = 50;	// in millimeter
+	public static final int MIN_WALL_DISTANCE = 150;		// in millimeter
 
 	private Brick brick;
 
@@ -30,9 +32,6 @@ public class Robot {
 	private ColorSensor colorSensor;
 	private TouchSensor touchSensor;
 	private UltrasonSensor ultrasonSensor;
-
-	public static final int ACCEPTED_DISTANCE_ERROR = 50;	// in millimeter
-	public static final int MIN_WALL_DISTANCE = 150;		// in millimeter
 
 	public Robot() {
 		brick = BrickFinder.getDefault();
@@ -97,7 +96,7 @@ public class Robot {
 			// Update the position if necessary (every 2 seconds)
 			newTime = System.currentTimeMillis();
 			if(newTime-time > 2000) {
-				position.update(wheels.getLinearSpeed()*2);
+				position.update(wheels.getLinearSpeed(),newTime-time);
 				time = newTime;
 			}
 
@@ -108,25 +107,27 @@ public class Robot {
 			// White line
 			if(colorSensor.isWhiteDetected()) {
 				wheels.stop();
-				position.update(wheels.getLinearSpeed()*System.currentTimeMillis()-time);
+				position.update(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 				return false; // Need To Rotate
 			} 
 			// To close to wall
 			if(/* Useless ? detectedDistance > expectedDistance-ACCEPTED_DISTANCE_ERROR &&*/ detectedDistance < MIN_WALL_DISTANCE) {
 				wheels.stop();
-				position.update(wheels.getLinearSpeed()*System.currentTimeMillis()-time);
+				position.update(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 				return false; // Need To Rotate
 			} 
 			// Suspect detection
 			if (detectedDistance + ACCEPTED_DISTANCE_ERROR < expectedDistance){
 				wheels.stop();
-				position.update(wheels.getLinearSpeed()*System.currentTimeMillis()-time);
+				newTime = System.currentTimeMillis();
+				position.update(wheels.getLinearSpeed(),newTime-time);
 				int res = suspectDetection();
 				numberOfSuspectDetection++;
 				if(res == 0 || numberOfSuspectDetection == 4) 
 					return false; // Need To Rotate
 				else if(res == 2) 
 					return true; // Puck, need to rush
+				time = System.currentTimeMillis();
 				continue; // Nothing, error on the captor / a robot on a frame, continue
 			}
 		}
