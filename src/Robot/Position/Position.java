@@ -101,7 +101,7 @@ public class Position {
 	 * @param linearSpeed In millimeters per seconds
 	 * @param time Time in milliseconds since the last update.
 	 */
-    public void update(double linearSpeed, long time) {
+    public void updateLinear(double linearSpeed, long time) {
         double distance = linearSpeed*time/1000;
         double theta = Math.toRadians(direction);
 
