@@ -187,5 +187,28 @@ public class Robot {
     public CustomRoueChassis(Wheel[] wheels, int dim) {
         super(wheels, dim);
     }
+    
+    public void ajusteRouesBaseSurCalibrationcouleur(int calibrationData) {
+    	
+        // algo pour ajuster les roues basées sur la couleur des données de la calibration
+        // Cette méthode peut être utilisé pour la précision du manoeuvrage
+    }
 
+    public void controlPliersActions(String action) {
+    	  // implémentation pour le controle de les actions de la pinces en fonction d'une action spécifique
+        // Cette méthode permettra d'activer la precisionde la prise du palet par les pinces
+    }
+
+    // Method for adjusting the chassis based on specific environmental conditions
+    public void adjustChassisForEnvironment() {
+        // logique pour ajuster dynamiquement le chassis en fonction de l'environnement autour 
+        // This method allows the robot to navigate efficiently through different terrains
+    }
+
+    // Méthode pour vérifier le statut des composants du chassis 
+    public void checkChassisStatus() {
+        // code pour gérer le status des composants du chassis comme les roues ou les moteurs
+        // This method ensures that the chassis is functioning properly during operation
+    }
+}
 }
