@@ -166,7 +166,7 @@ public class Robot {
 	 * 
 	 * @param dodge If it's for dodge a object in front of the robot.
 	 */
-	private void rotateForBackHome(boolean dodge) {
+	private void rotateForBackHome(boolean dodge) { //TO DO : Cas ou on detecte un palais quand on se decale
 		int angleRetour = position.calculateAngleToReturnHome();
 		rotate(angleRetour);
 		position.updateAngle();// update l'angle
