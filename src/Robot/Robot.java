@@ -1,4 +1,3 @@
-package Robot;
 
 import Robot.Motor.CustomWheelsChassis;
 import Robot.Motor.Pliers;
@@ -176,4 +175,17 @@ public class Robot {
 		while(pliers.isMoving()) {}
 		pliers.close();
 	}
+	
+
+	public class CustomRoueChassis extends WheeledChassis {
+
+    /**
+     * Constructeur for the CustomWheelsChassis class.
+     * @param wheels An aray of wheels used for the chassis.
+     * @param dim Dimension of the chassis.
+     */
+    public CustomRoueChassis(Wheel[] wheels, int dim) {
+        super(wheels, dim);
+    }
+
 }
