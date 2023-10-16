@@ -204,7 +204,36 @@ public class Robot {
 	 * @param dodge If it's for dodge a object in front of the robot.
 	 */
 	private void rotateForBackHome(boolean dodge) {
-		// TODO
+		int angleRetour = position.calculateAngleToReturnHome();
+		rotate(angleRetour);
+		position.updateAngle();// update l'angle
+		
+		while(colorSensor.isWhiteDetected()==false) {
+			if(suspectDetection()==0) {	//detection
+				goForward(2500); // Creer methode pour calculer distance de la ligne blanche?? ou alors avancer jusqu a detecter la ligne blanche?
+				position.updateLinear();}
+			
+			else if (suspectDetection()==2){
+				// eviter par la droite
+				if (position.getX()<1000 && (position.getHome()=='g')||position.getX()>1000 && (position.getHome()=='b')) { 
+					rotate(45);
+					position.updateAngle(); // update l'angle
+					goForward(200); //avancer pour se decaler de 20cm
+					position.updateLinear();//update x et y 
+					rotate(-45);//tourner de 45 degres
+					position.updateAngle();
+				}
+
+				// eviter par la gauche
+				rotate(-45);
+				position.updateAngle();// update l'angle
+				goForward(200); //avancer pour se decaler de 20cm
+				position.updateLinear();//update x et y 
+				rotate(45);
+				position.updateAngle(); //update l'angle
+				}
+			}
+		
 	}
 
 	public void test() {
