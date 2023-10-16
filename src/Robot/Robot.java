@@ -187,8 +187,7 @@ public class Robot {
     public CustomRoueChassis(Wheel[] wheels, int dim) {
         super(wheels, dim);
     }
-    
-    public void ajusteRouesBaseSurCalibrationcouleur(int calibrationData) {
+   public void ajusteRouesBaseSurCalibrationcouleur(int calibrationData) {
     	
         // algo pour ajuster les roues basées sur la couleur des données de la calibration
         // Cette méthode peut être utilisé pour la précision du manoeuvrage
@@ -208,7 +207,8 @@ public class Robot {
     // Méthode pour vérifier le statut des composants du chassis 
     public void checkChassisStatus() {
         // code pour gérer le status des composants du chassis comme les roues ou les moteurs
-        // This method ensures that the chassis is functioning properly during operation
+        // Cette méthode garantit que le châssis fonctionne correctement pendant la récupération du galet
     }
+
 }
 }
