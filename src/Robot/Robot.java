@@ -1,4 +1,3 @@
-package Robot;
 
 import Robot.Motor.CustomWheelsChassis;
 import Robot.Motor.Pliers;
@@ -8,21 +7,19 @@ import Robot.Sensor.TouchSensor;
 import Robot.Sensor.UltrasonSensor;
 import lejos.hardware.Brick;
 import lejos.hardware.BrickFinder;
+import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.Motor;
+import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
-import lejos.utility.Delay;
-
-
-
 
 public class Robot {
 
-
-
-	private static final int WHEEL_DIAMETER= 56;
-	private static final float WHEEL_OFFSET_VALUE = 61.5f;
+	public static final int WHEEL_DIAMETER= 56;
+	public static final float WHEEL_OFFSET_VALUE = 61.5f;
+	public static final int ACCEPTED_DISTANCE_ERROR = 50;	// in millimeter
+	public static final int MIN_WALL_DISTANCE = 150;		// in millimeter
 
 	private Brick brick;
 
@@ -35,22 +32,19 @@ public class Robot {
 	private TouchSensor touchSensor;
 	private UltrasonSensor ultrasonSensor;
 
-	private static final int ACCEPTED_DISTANCE_ERROR = 50;	// in millimeter
-	private static final int MIN_WALL_DISTANCE = 150;		// in millimeter
-
 	public Robot() {
 		brick = BrickFinder.getDefault();
-
+		
 		Wheel leftWheel = WheeledChassis.modelWheel(Motor.D, WHEEL_DIAMETER).offset(-WHEEL_OFFSET_VALUE);
 		Wheel rightWheel = WheeledChassis.modelWheel(Motor.C, WHEEL_DIAMETER).offset(WHEEL_OFFSET_VALUE);
 
 		wheels = new CustomWheelsChassis(new Wheel[]{leftWheel, rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
-		pliers = new Pliers(brick.getPort("A"));
+		pliers = new Pliers(Motor.A);
 
 		colorSensor = new ColorSensor(SensorPort.S1);	   
-		touchSensor = new TouchSensor(SensorPort.S2);		
-		ultrasonSensor = new UltrasonSensor(SensorPort.S3); 
-		ultrasonSensor.enable();
+		touchSensor = new TouchSensor(SensorPort.S3);		
+		ultrasonSensor = new UltrasonSensor(SensorPort.S4); 
+		//ultrasonSensor.enable();
 	}
 
 	public boolean isWhite() {
@@ -63,46 +57,26 @@ public class Robot {
 			return false;           
 	}
 
-	private void start(char side, char line) {
+	public void start(char side, char line) {
 		position = new Position(side, line);
-		int res, distance = 2500;
+		boolean puckFound;
+		int distance = 2500;
 		do {
-			// Go forward while nothing happen
-			res = goForward(distance);
-			if(res == 0) { // White line
-				rotateForFindPuck();
+			// Go forward while nothing happen = green part
+			puckFound = goFindPuck(distance);
+			if(!puckFound) {
 				distance = position.getExpectedDistance()-MIN_WALL_DISTANCE+50;
 				continue;
-			} else if(res == 1) { // To close to wall
-				rotateForFindPuck();
-				distance = position.getExpectedDistance()-MIN_WALL_DISTANCE+50;
-				continue;
-			} else if (res == 2) { // Suspect detection
-				res = suspectDetection(); // Clarified the suspicious detection
-				// Simple wall far away
-				if(res == 0) {
-					distance = ultrasonSensor.getDetectedDistance()-MIN_WALL_DISTANCE+50;
-					continue;
-				} // To close to wall
-				else if(res == 1) {
-					rotateForFindPuck();
-					distance = position.getExpectedDistance()-MIN_WALL_DISTANCE+50;
-					continue;
-				} // Puck
-				else if(res == 2) {
-					boolean havePuck = rushTakePuck(ultrasonSensor.getDetectedDistance()+100);
-					// TODO
-				} // Robot
-				else if(res == 3) {
-					// TODO
-				}
-				else throw new RuntimeException("the return of the suspectDetection is incorrect");
-			} else { // Full travel
+			} else { // Suspect detection
+				// TODO puck found
+			}
+			/*// Useless ?
+				else { // Full travel
 				verifyPosition(); // Check if the position is correct and modify the position if necessary
 				rotateForFindPuck();
 				distance = position.getExpectedDistance()-MIN_WALL_DISTANCE+50;
 				continue;
-			}
+			 */
 		} while(true); // TODO : modify the condition : if we do all the map without find puck (go back home on the white line because it's fun)
 	}
 
@@ -110,22 +84,18 @@ public class Robot {
 	 * Go forward and return the next action.
 	 * 
 	 * @param distance Max distance to do
-	 * @return 
-	 * 		0 = white line 
-			1 = To close to wall.
-	 * 		2 = suspect detection.
-	 * 		3 = full travel
+	 * @return if a puck is found
 	 */
-	private int goForward(int distance) {
+	private boolean goFindPuck(int distance) {
 		long newTime, time = System.currentTimeMillis();
 		float[] front = new float[1];
-		int detectedDistance, expectedDistance;
+		int detectedDistance, expectedDistance, numberOfSuspectDetection;
 		wheels.travel(distance);
 		while(wheels.isMoving()) {
 			// Update the position if necessary (every 2 seconds)
 			newTime = System.currentTimeMillis();
-			if(newTime-time > 1000) {
-				position.update(wheels.getLinearSpeed());
+			if(newTime-time > 2000) {
+				position.update(wheels.getLinearSpeed(),newTime-time);
 				time = newTime;
 			}
 
@@ -135,53 +105,46 @@ public class Robot {
 
 			// White line
 			if(colorSensor.isWhiteDetected()) {
-				return 0;
-			}
-			// To close to wall
-			if(detectedDistance > expectedDistance-ACCEPTED_DISTANCE_ERROR && detectedDistance < MIN_WALL_DISTANCE) {
 				wheels.stop();
-				position.update(wheels.getLinearSpeed()*System.currentTimeMillis()-time);
-				return 1;
+				position.update(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				return false; // Need To Rotate
+			} 
+			// To close to wall
+			if(/* Useless ? detectedDistance > expectedDistance-ACCEPTED_DISTANCE_ERROR &&*/ detectedDistance < MIN_WALL_DISTANCE) {
+				wheels.stop();
+				position.update(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				return false; // Need To Rotate
 			} 
 			// Suspect detection
 			if (detectedDistance + ACCEPTED_DISTANCE_ERROR < expectedDistance){
 				wheels.stop();
-				position.update(wheels.getLinearSpeed()*System.currentTimeMillis()-time);
-				return 2;
+				newTime = System.currentTimeMillis();
+				position.update(wheels.getLinearSpeed(),newTime-time);
+				int res = suspectDetection();
+				numberOfSuspectDetection++;
+				if(res == 0 || numberOfSuspectDetection == 4) 
+					return false; // Need To Rotate
+				else if(res == 2) 
+					return true; // Puck, need to rush
+				time = System.currentTimeMillis();
+				continue; // Nothing, error on the captor / a robot on a frame, continue
 			}
 		}
 		wheels.stop();
 		position.update(wheels.getLinearSpeed()*System.currentTimeMillis()-time);
-		return 3;
+		return false; // Normalement il n'y a pas a aller ici
 	}
 	/**
-	 * Do a series of 2 distance measurements using the UltrasonSensor to determine the nature of the detection.
+	 * Use the UltrasonSensor to determine the nature of the detection.
 	 * 
 	 * @return
-	 *     0 = wall far away.
-	 *     1 = to close to wall.
-	 *     2 = puck.
-	 *     3 = robot.
+	 *     0 = not a puck, need to rotate (close to wall, robot or angle)
+	 *     1 = nothing, continue
+	 *     2 = puck
 	 */
 	private int suspectDetection() {
 		int expectedDistance = ultrasonSensor.getDetectedDistance();
-		int detectedDistance1 = ultrasonSensor.getDetectedDistance();
-		Delay.msDelay(1000);
-		int detectedDistance2 = ultrasonSensor.getDetectedDistance();
-		// It's a simple wall 
-		if(detectedDistance1 > expectedDistance-ACCEPTED_DISTANCE_ERROR) {
-			// Wall to close
-			if(detectedDistance1 < MIN_WALL_DISTANCE)
-				return 1;
-			// Wall far away
-			return 0;
-		}
-		// Same distance +- 5 millimeter = a puck
-		else if(detectedDistance1 > detectedDistance2-5 && detectedDistance1 < detectedDistance2+5)
-			return 2;
-		// Isn't the same distance = robot
-		else
-			return 3;
+		return ultrasonSensor.clarifySuspectDetection(expectedDistance);
 	}
 
 	/**
@@ -237,8 +200,44 @@ public class Robot {
 	}
 
 	public void test() {
-		pliers.close(true);
+		pliers.open(true);
 		while(pliers.isMoving()) {}
-		pliers.open();
+		pliers.close();
 	}
+	
+
+	public class CustomRoueChassis extends WheeledChassis {
+
+    /**
+     * Constructeur for the CustomWheelsChassis class.
+     * @param wheels An aray of wheels used for the chassis.
+     * @param dim Dimension of the chassis.
+     */
+    public CustomRoueChassis(Wheel[] wheels, int dim) {
+        super(wheels, dim);
+    }
+   public void ajusteRouesBaseSurCalibrationcouleur(int calibrationData) {
+    	
+        // algo pour ajuster les roues basées sur la couleur des données de la calibration
+        // Cette méthode peut être utilisé pour la précision du manoeuvrage
+    }
+
+    public void controlPliersActions(String action) {
+    	  // implémentation pour le controle de les actions de la pinces en fonction d'une action spécifique
+        // Cette méthode permettra d'activer la precisionde la prise du palet par les pinces
+    }
+
+    // Method for adjusting the chassis based on specific environmental conditions
+    public void adjustChassisForEnvironment() {
+        // logique pour ajuster dynamiquement le chassis en fonction de l'environnement autour 
+        // This method allows the robot to navigate efficiently through different terrains
+    }
+
+    // Méthode pour vérifier le statut des composants du chassis 
+    public void checkChassisStatus() {
+        // code pour gérer le status des composants du chassis comme les roues ou les moteurs
+        // Cette méthode garantit que le châssis fonctionne correctement pendant la récupération du galet
+    }
+
+}
 }

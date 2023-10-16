@@ -1,5 +1,7 @@
 package Robot.Position;
 
+import Robot.Robot;
+
 public class Position {
 
 	private static final int YELLOW_LINE = 500;
@@ -12,6 +14,8 @@ public class Position {
 	private static final int BLUE_LINE = 2100;
 	private static final int RIGHT_WHITE_LINE = 2700;
 
+	private static final int CAPTER_DISTANCE = 75; // TODO : Meusurer la distance entre le centre de rotation du robot et le capteur ultrason
+	
 	// Left = g (green) , right = b (blue)
 	private char home;
 
@@ -59,7 +63,8 @@ public class Position {
 	 */
 	public void rotationPerformed(int angle) {
 		direction += angle;
-		direction %= 360;
+		if(direction < 0) direction += 360;
+		else direction %= 360;
 	}
 
 	/**
@@ -87,6 +92,20 @@ public class Position {
 			teta_0 = Math.PI/2-teta_0;
 		else
 			o = a;
-		return (int)(o/Math.cos(teta_0));
+		return (int)(o/Math.cos(teta_0))-CAPTER_DISTANCE;
 	}
+
+	/**
+	 * Updates the position. Works only for straight line travel. The robot must not do rotation. 
+	 * 
+	 * @param linearSpeed In millimeters per seconds
+	 * @param time Time in milliseconds since the last update.
+	 */
+    public void update(double linearSpeed, long time) {
+        double distance = linearSpeed*time/1000;
+        double theta = Math.toRadians(direction);
+
+        x += distance*Math.cos(theta);
+        y += distance*Math.sin(theta);
+    }
 }

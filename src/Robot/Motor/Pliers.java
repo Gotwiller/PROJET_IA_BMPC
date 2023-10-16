@@ -1,14 +1,14 @@
 package Robot.Motor;
 
-import lejos.hardware.motor.EV3LargeRegulatedMotor;
-import lejos.hardware.port.Port;
+import lejos.hardware.motor.NXTRegulatedMotor;
 
-public class Pliers extends EV3LargeRegulatedMotor {
+public class Pliers {
 	
+	private NXTRegulatedMotor motor;
 	boolean closed;
 	
-	public Pliers(Port p) {
-		super(p);
+	public Pliers(NXTRegulatedMotor motor) {
+		this.motor = motor;
 		closed = true;
 	}
 
@@ -25,7 +25,7 @@ public class Pliers extends EV3LargeRegulatedMotor {
 	 */
 	public void open(boolean force) {
 		if (closed || force) {
-			this.rotate(360*2);
+			motor.rotate(360*2);
 			closed = false;
 		}
 	}
@@ -43,7 +43,7 @@ public class Pliers extends EV3LargeRegulatedMotor {
 	 */
 	public void close(boolean force) {
 		if (!closed || force) {
-			this.rotate(-360*2);
+			motor.rotate(-360*2);
 			closed = true;
 		}
 	}
@@ -63,5 +63,9 @@ public class Pliers extends EV3LargeRegulatedMotor {
 	 */
 	public boolean isClose() {
 		return closed;
+	}
+
+	public boolean isMoving() {
+		return motor.isMoving();
 	}
 }

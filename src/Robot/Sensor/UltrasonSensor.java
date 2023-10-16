@@ -8,6 +8,7 @@ public class UltrasonSensor extends EV3UltrasonicSensor {
 	public UltrasonSensor(Port p) {
 		super(p);
 	}
+	
 	/**
 	 * Get the detected distance from the UltrasonSensor in millimeter.
 	 * 
