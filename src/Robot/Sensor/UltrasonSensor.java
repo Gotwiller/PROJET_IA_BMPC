@@ -15,9 +15,9 @@ public class UltrasonSensor extends EV3UltrasonicSensor {
 	 * @return a distance in millimeter
 	 */
 	public int getDetectedDistance() {
-	    float[] front = new float[1];
-	    getDistanceMode().fetchSample(front, 0);
-	    return (int)(front[0]*1000);
+		float[] front = new float[1];
+		getDistanceMode().fetchSample(front, 0);
+		return (int)(front[0]*1000);
 	}
 
 	/**
@@ -30,15 +30,15 @@ public class UltrasonSensor extends EV3UltrasonicSensor {
 	 */
 	
 	public int clarifySuspectDetection(int expectedDistance) {
-	int detected = getDetectedDistance(), erreur = 50;
-	try {Thread.sleep(15);}
-	catch (Exception e) {}
-	int detected2 = getDetectedDistance();
-	if (expectedDistance >= detected2-erreur && expectedDistance <= detected2+erreur)
-		return 0;
-	if (expectedDistance <= detected2-erreur && expectedDistance >= detected2+erreur && detected >= detected2-erreur && detected <= detected2+ erreur)
-		return 2;
-	else return 1;
+		int detected = getDetectedDistance(), erreur = 50;
+		try {Thread.sleep(15);}
+		catch (Exception e) {}
+		int detected2 = getDetectedDistance();
+		if (expectedDistance >= detected2-erreur && expectedDistance <= detected2+erreur)
+			return 0;
+		if (expectedDistance <= detected2-erreur && expectedDistance >= detected2+erreur && detected >= detected2-erreur && detected <= detected2+ erreur)
+			return 2;
+		else return 1;
 	}
 	
 }
