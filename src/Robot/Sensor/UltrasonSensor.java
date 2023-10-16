@@ -30,7 +30,7 @@ public class UltrasonSensor extends EV3UltrasonicSensor {
 	 */
 	public int clarifySuspectDetection(int expectedDistance) {
 	int detected = getDetectedDistance(), erreur = 50;
-	try {Thread.sleep(20);}
+	try {Thread.sleep(10);}
 	catch (Exception e) {}
 	int detected2 = getDetectedDistance();
 	if (expectedDistance >= detected2-erreur && expectedDistance <= detected2+erreur)
