@@ -166,38 +166,41 @@ public class Robot {
 	 * 
 	 * @param dodge If it's for dodge a object in front of the robot.
 	 */
-	private void rotateForBackHome(boolean dodge) { //TO DO : Cas ou on detecte un palais quand on se decale
+	private void rotateForBackHome(boolean dodge) {
 		int angleRetour = position.calculateAngleToReturnHome();
-		rotate(angleRetour);
-		position.updateAngle();// update l'angle
+		rotate(angleRetour); position.updateAngle();// update l'angle
 		
 		while(colorSensor.isWhiteDetected()==false) {
 			if(suspectDetection()==0) {	//detection
-				goForward(2500); // Creer methode pour calculer distance de la ligne blanche?? ou alors avancer jusqu a detecter la ligne blanche?
-				position.updateLinear();}
+				goForward(2500); position.updateLinear();}
 			
 			else if (suspectDetection()==2){
 				// eviter par la droite
 				if (position.getX()<1000 && (position.getHome()=='g')||position.getX()>1000 && (position.getHome()=='b')) { 
-					rotate(45);
-					position.updateAngle(); // update l'angle
-					goForward(200); //avancer pour se decaler de 20cm
-					position.updateLinear();//update x et y 
-					rotate(-45);//tourner de 45 degres
-					position.updateAngle();
+					rotate(45); position.updateAngle();
+					while (suspectDetection()==2) { // Cas ou on se decale ET palais dans le champ
+						rotate(-45); position.updateAngle();
+						goForward(100); position.updateLinear();
+						rotate(45); position.updateAngle();
+					}
+					goForward(200);  position.updateLinear();
+					rotate(-45); position.updateAngle();
 				}
 
 				// eviter par la gauche
 				rotate(-45);
-				position.updateAngle();// update l'angle
-				goForward(200); //avancer pour se decaler de 20cm
-				position.updateLinear();//update x et y 
-				rotate(45);
-				position.updateAngle(); //update l'angle
+				while (suspectDetection()==2) { // Cas ou on se decale ET palais dans le champ
+					rotate(45); position.updateAngle();
+					goForward(100); position.updateLinear();
+					rotate(-45); position.updateAngle();
+				}
+				position.updateAngle();
+				goForward(200); position.updateLinear();
+				rotate(45); position.updateAngle();
 			}
-		}
-		
+		}	
 	}
+	
 	public void test() {
 		pliers.open(true);
 		while(pliers.isMoving()) {}
