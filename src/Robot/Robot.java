@@ -167,38 +167,46 @@ public class Robot {
 	 * @param dodge If it's for dodge a object in front of the robot.
 	 */
 	private void rotateForBackHome(boolean dodge) {
+		long newTime, time = System.currentTimeMillis();
 		int angleRetour = position.calculateAngleToReturnHome();
-		rotate(angleRetour);
-		position.updateAngle();// update l'angle
+		int cote; //-1 si plus proche du mur gauche / 1 si plus proche du mur droit
+		rotate(angleRetour); position.updateAngle(angleRetour);// update l'angle
 		
 		while(colorSensor.isWhiteDetected()==false) {
-			if(suspectDetection()==0) {	//detection
-				goForward(2500); // Creer methode pour calculer distance de la ligne blanche?? ou alors avancer jusqu a detecter la ligne blanche?
-				position.updateLinear();}
-			
-			else if (suspectDetection()==2){
-				// eviter par la droite
-				if (position.getX()<1000 && (position.getHome()=='g')||position.getX()>1000 && (position.getHome()=='b')) { 
-					rotate(45);
-					position.updateAngle(); // update l'angle
-					goForward(200); //avancer pour se decaler de 20cm
-					position.updateLinear();//update x et y 
-					rotate(-45);//tourner de 45 degres
-					position.updateAngle();
-				}
-
-				// eviter par la gauche
-				rotate(-45);
-				position.updateAngle();// update l'angle
-				goForward(200); //avancer pour se decaler de 20cm
-				position.updateLinear();//update x et y 
-				rotate(45);
-				position.updateAngle(); //update l'angle
-				}
+			// MAJ de la position et de l'angle toute les 100ms
+			newTime = System.currentTimeMillis();
+			if(newTime-time > 100) {
+				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
+				time = newTime;
 			}
-		
+			
+			//Detecte rien
+			if(suspectDetection()==0) wheels.travel(2500);
+			
+			// Detecte un palais
+			else if (suspectDetection()==2){ 	
+				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				// Coté par lequel eviter
+				if (position.getX()<1000 && (position.getHome()=='g')||position.getX()>1000 && (position.getHome()=='b')) 
+					cote = -1; // Eviter par la droite
+				else cote= 1; // Eviter par la gauche
+				
+				rotate(-45*cote); position.updateAngle(-45*cote);
+				// Cas ou le robot tourne de 45degres ET palais dans le champ
+				while (suspectDetection()==2) { 
+					rotate(45*cote); position.updateAngle(45*cote);
+					wheels.travel(100); 
+					wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+					rotate(-45*cote); position.updateAngle(-45*cote);
+				}
+				wheels.travel(200); 
+				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				rotate(45*cote); position.updateAngle(45*cote);
+			}
+		}	
+		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 	}
-
+	
 	public void test() {
 		pliers.open(true);
 		while(pliers.isMoving()) {}

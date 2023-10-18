@@ -61,7 +61,7 @@ public class Position {
 	 * 
 	 * @param angle The angle in ° 
 	 */
-	public void rotationPerformed(int angle) {
+	public void updateAngle(int angle) {
 		direction += angle;
 		if(direction < 0) direction += 360;
 		else direction %= 360;
@@ -101,9 +101,10 @@ public class Position {
 	 * @param linearSpeed In millimeters per seconds
 	 * @param time Time in milliseconds since the last update.
 	 */
-    public void update(double linearSpeed, long time) {
+    public void updateLinear(double linearSpeed, long time) {
         double distance = linearSpeed*time/1000;
         double theta = Math.toRadians(direction);
+        int acceleration_X = getXAccel();
 
         x += distance*Math.cos(theta);
         y += distance*Math.sin(theta);
