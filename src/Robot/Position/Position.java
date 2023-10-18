@@ -104,7 +104,6 @@ public class Position {
     public void updateLinear(double linearSpeed, long time) {
         double distance = linearSpeed*time/1000;
         double theta = Math.toRadians(direction);
-        int acceleration_X = getXAccel();
 
         x += distance*Math.cos(theta);
         y += distance*Math.sin(theta);
