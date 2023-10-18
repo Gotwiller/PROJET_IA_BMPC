@@ -173,7 +173,7 @@ public class Robot {
 		rotate(angleRetour); position.updateAngle(angleRetour);// update l'angle
 		
 		while(colorSensor.isWhiteDetected()==false) {
-			// MAJ de la position et de l'angle toute les 100ms
+			// MAJ de la position toute les 100ms
 			newTime = System.currentTimeMillis();
 			if(newTime-time > 100) {
 				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
