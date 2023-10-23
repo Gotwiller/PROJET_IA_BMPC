@@ -167,9 +167,45 @@ public class Robot {
 	 * @param dodge If it's for dodge a object in front of the robot.
 	 */
 	private void rotateForBackHome(boolean dodge) {
-		// TODO
+		long newTime, time = System.currentTimeMillis();
+		int angleRetour = position.calculateAngleToReturnHome();
+		int cote; //-1 si plus proche du mur gauche / 1 si plus proche du mur droit
+		rotate(angleRetour); position.updateAngle(angleRetour);// update l'angle
+		
+		while(colorSensor.isWhiteDetected()==false) {
+			// MAJ de la position toute les 100ms
+			newTime = System.currentTimeMillis();
+			if(newTime-time > 100) {
+				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
+				time = newTime;
+			}
+			
+			//Detecte rien
+			if(suspectDetection()==0) wheels.travel(2500);
+			
+			// Detecte un palais
+			else if (suspectDetection()==2){ 	
+				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				// Coté par lequel eviter
+				if (position.getX()<1000 && (position.getHome()=='g')||position.getX()>1000 && (position.getHome()=='b')) 
+					cote = -1; // Eviter par la droite
+				else cote= 1; // Eviter par la gauche
+				rotate(-45*cote); position.updateAngle(-45*cote);
+				// Cas ou le robot tourne de 45degres ET palais dans le champ
+				while (suspectDetection()==2) { 
+					rotate(45*cote); position.updateAngle(45*cote);
+					wheels.travel(100); 
+					wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+					rotate(-45*cote); position.updateAngle(-45*cote);
+				}
+				wheels.travel(200); 
+				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				rotate(45*cote); position.updateAngle(45*cote);
+			}
+		}	
+		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 	}
-
+	
 	public void test() {
 		pliers.open(true);
 		while(pliers.isMoving()) {}
@@ -188,38 +224,15 @@ public class Robot {
         super(wheels, dim);
     }
    public void ajusteRouesBaseSurCalibrationcouleur(int calibrationData) {
-    	getDetectedcolors= 
+    	
         // algo pour ajuster les roues basées sur la couleur des données de la calibration
         // Cette méthode peut être utilisé pour la précision du manoeuvrage
     }
-   
-   public boolean getPuck() {
-	   return true;
-   }
-   }
 
-   public void controlPliersActions(String action) {
-    if ((position.getExpectedDistance()- (int tableaudevaleurs-())<=0 +  ACCEPTED_DISTANCE_ERROR) {
-    	float distance = detectedpalet; 
-    	gofoward(distance);
-    	pliers.open();
-    	if(getPuck()==true) {
-    		pliers.close();
-    	}
-    }
-    else {
-    	for(i=0;i<=getdetected();i++) {
-    		rotate(i);
-    		
-    }
-    }
-    		
-    		
-	
-    	}
+    public void controlPliersActions(String action) {
     	  // implémentation pour le controle de les actions de la pinces en fonction d'une action spécifique
         // Cette méthode permettra d'activer la precisionde la prise du palet par les pinces
-    
+    }
 
     // Method for adjusting the chassis based on specific environmental conditions
     public void adjustChassisForEnvironment() {
