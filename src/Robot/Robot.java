@@ -232,7 +232,7 @@ public class Robot {
    public void controlPliersActions(String action) {
 	    if ((position.getExpectedDistance()- (int tableaudevaleurs-())<=0 +  ACCEPTED_DISTANCE_ERROR) {
 	    	float distance = detectedpalet; 
-	    	gofoward(distance);
+	    	gofindpuck(distance);
 	    	pliers.open();
 	    	if(getPuck()==true) {
 	    		pliers.close();
@@ -245,8 +245,9 @@ public class Robot {
 	    }
 	   
 
-    // Method for adjusting the chassis based on specific environmental conditions
     public void adjustChassisForEnvironment() {
+    	
+    }
         // logique pour ajuster dynamiquement le chassis en fonction de l'environnement autour 
         // This method allows the robot to navigate efficiently through different terrains
     }
