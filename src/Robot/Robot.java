@@ -229,10 +229,21 @@ public class Robot {
         // Cette méthode peut être utilisé pour la précision du manoeuvrage
     }
 
-    public void controlPliersActions(String action) {
-    	  // implémentation pour le controle de les actions de la pinces en fonction d'une action spécifique
-        // Cette méthode permettra d'activer la precisionde la prise du palet par les pinces
-    }
+   public void controlPliersActions(String action) {
+	    if ((position.getExpectedDistance()- (int tableaudevaleurs-())<=0 +  ACCEPTED_DISTANCE_ERROR) {
+	    	float distance = detectedpalet; 
+	    	gofoward(distance);
+	    	pliers.open();
+	    	if(getPuck()==true) {
+	    		pliers.close();
+	    	}
+	    }
+	    else {
+	    	for(i=0;i<=getdetected();i++) {
+	    		rotate(i);
+	    		
+	    }
+	   
 
     // Method for adjusting the chassis based on specific environmental conditions
     public void adjustChassisForEnvironment() {
