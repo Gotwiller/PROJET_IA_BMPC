@@ -1,17 +1,24 @@
 package Robot.Sensor;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.robotics.Color;
+import lejos.robotics.SampleProvider;
 
 public class ColorSensor extends EV3ColorSensor {
-
+	private EV3ColorSensor colorSensor;
+    private SampleProvider rgbMode;
+    private float[] sample;
+    private Calibration calibration;
 	private static final int[] COLOR_NAMES = new int[] {Color.RED,Color.GREEN,Color.BLUE,Color.YELLOW,Color.BLACK,Color.GRAY,Color.WHITE}; 
 	private static final Map<Integer, int[]> COLORS = new HashMap<>();
 
@@ -71,15 +78,78 @@ public class ColorSensor extends EV3ColorSensor {
 		});
 	}
 
-	public ColorSensor(Port p) {
+	public ColorSensor(Port p, EV3ColorSensor colorSensor) {
 		super(p);
+		this.colorSensor = colorSensor;
+        this.rgbMode = colorSensor.getRGBMode();
+        this.sample = new float[rgbMode.sampleSize()];
+        this.calibration = new Calibration();
 	}
-
+	
 	/**
 	 * Get the name of the color detected.<p>
 	 * 
 	 * @return RED, GREEN, BLUE, YELLOW, BLACk, GRAY, WHITE value. UNKNOWN = -1 
 	 */
+	
+	
+    class Calibration {
+	    private float redValue;
+	    private float greenValue;
+	    private float blueValue;
+
+	    public float getRedValue() {
+	        return redValue;
+	    }
+
+	    public float getGreenValue() {
+	        return greenValue;
+	    }
+
+	    public float getBlueValue() {
+	        return blueValue;
+	    }
+	}
+
+	 public void readColor() {
+	        // lis et retourne en afficharge les valeurs RGB
+	        rgbMode.fetchSample(sample, 0);
+	        float redValue = sample[0];
+	        float greenValue = sample[1];
+	        float blueValue = sample[2];
+
+	        System.out.println("Current RGB - R: " + redValue + " G: " + greenValue + " B: " + blueValue);
+	    }
+
+	    public void close() {
+	        //arrete le capteur quand tache finit
+	        colorSensor.close();
+	    }
+	    
+	    
+	    public void calibrateColor() {
+	        System.out.println("Demmarage du calibrage, mettez le capteur sur la cible a calibrer");
+
+	        // Capture calibration values
+	        rgbMode.fetchSample(sample, 0);
+	        float redValue = sample[0];
+	        float greenValue = sample[1];
+	        float blueValue = sample[2];
+
+	        System.out.println("Calibration faite - R: " + redValue + " G: " + greenValue + " B: " + blueValue);
+
+	        //Enregistrement des valeurs RGB detecter
+	        try (BufferedWriter writer = new BufferedWriter(new FileWriter(calibratedColorsFileName))) {
+	            writer.write(String.format("%.2f;%.2f;%.2f", redValue, greenValue, blueValue));
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+	    }
+    
+	    
+
+	
+	
 	public int getDetectedColor() {
 		float[] rgb = new float[3];
 		this.getRGBMode().fetchSample(rgb, 0);
