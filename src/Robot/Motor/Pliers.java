@@ -65,6 +65,11 @@ public class Pliers {
 		return closed;
 	}
 
+	/**
+	 * Checks if the motor is in motion.
+	 *
+	 * @return true if the motor is in motion, else false.
+	 */
 	public boolean isMoving() {
 		return motor.isMoving();
 	}

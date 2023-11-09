@@ -127,7 +127,7 @@ public class Position {
 	 * 
 	 * @return The expected distance in millimeters.
 	 */
-	public double getExpectedDistance() {
+	public int getExpectedDistance() {
 		double teta_0 = Math.toRadians(direction%90);
 		double o,a;
 		if(direction < 90) {

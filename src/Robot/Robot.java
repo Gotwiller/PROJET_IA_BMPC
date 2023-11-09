@@ -92,13 +92,13 @@ public class Robot {
 	private boolean goFindPuck(int distance) {
 		long newTime, time = System.currentTimeMillis();
 		float[] front = new float[1];
-		int detectedDistance, expectedDistance, numberOfSuspectDetection;
+		int detectedDistance, expectedDistance, numberOfSuspectDetection = 0;
 		wheels.travel(distance);
 		while(wheels.isMoving()) {
 			// Update the position if necessary (every 2 seconds)
 			newTime = System.currentTimeMillis();
 			if(newTime-time > 2000) {
-				position.update(wheels.getLinearSpeed(),newTime-time);
+				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
 				time = newTime;
 			}
 
@@ -109,20 +109,20 @@ public class Robot {
 			// White line
 			if(colorSensor.isWhiteDetected()) {
 				wheels.stop();
-				position.update(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 				return false; // Need To Rotate
 			} 
 			// To close to wall
 			if(/* Useless ? detectedDistance > expectedDistance-ACCEPTED_DISTANCE_ERROR &&*/ detectedDistance < MIN_WALL_DISTANCE) {
 				wheels.stop();
-				position.update(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 				return false; // Need To Rotate
 			} 
 			// Suspect detection
 			if (detectedDistance + ACCEPTED_DISTANCE_ERROR < expectedDistance){
 				wheels.stop();
 				newTime = System.currentTimeMillis();
-				position.update(wheels.getLinearSpeed(),newTime-time);
+				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
 				int res = suspectDetection();
 				numberOfSuspectDetection++;
 				if(res == 0 || numberOfSuspectDetection == 4) 
@@ -134,7 +134,7 @@ public class Robot {
 			}
 		}
 		wheels.stop();
-		position.update(wheels.getLinearSpeed()*System.currentTimeMillis()-time);
+		position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 		return false; // Normalement il n'y a pas a aller ici
 	}
 	/**
