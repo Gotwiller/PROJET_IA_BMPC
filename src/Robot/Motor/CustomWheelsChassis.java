@@ -3,7 +3,6 @@ package Robot.Motor;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
-import lejos.robotics.navigation.DifferentialPilot;
 import lejos.robotics.navigation.MovePilot;
 
 public class CustomWheelsChassis extends WheeledChassis {
@@ -11,7 +10,7 @@ public class CustomWheelsChassis extends WheeledChassis {
     private EV3LargeRegulatedMotor rightMotor;
     private MovePilot MovePilot;
 
-	private CustomWheelsChassis(Wheel[] wheels, Object object, int dim, int i, Wheel[] wheels2, int typeDifferential) {
+	public CustomWheelsChassis(Wheel[] wheels, int dim) {
 		super(wheels, dim);
 	}
 

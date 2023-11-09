@@ -35,25 +35,23 @@ public class Robot {
 	public static final int MIN_WALL_DISTANCE = 150;		// en millimetre
 
 	private Brick brick;
-	private CustomWheelsChassis chassis;
-	
+
 	private Position position;
 
 	private CustomWheelsChassis wheels;
 	private Pliers pliers;
-	private Pliers gripper;
 	private ColorSensor colorSensor;
 	private TouchSensor touchSensor;
 	private UltrasonSensor ultrasonSensor;
-	
+
 	public Robot() {
-		
+
 		brick = BrickFinder.getDefault();
-		
+
 		Wheel leftWheel = WheeledChassis.modelWheel(Motor.D, WHEEL_DIAMETER).offset(-WHEEL_OFFSET_VALUE);
 		Wheel rightWheel = WheeledChassis.modelWheel(Motor.C, WHEEL_DIAMETER).offset(WHEEL_OFFSET_VALUE);
 
-		wheels = new CustomWheelsChassis(null, null, 0, 0, new Wheel[]{leftWheel, rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
+		wheels = new CustomWheelsChassis(new Wheel[]{leftWheel, rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
 		pliers = new Pliers(Motor.A);
 
 		colorSensor = new ColorSensor(SensorPort.S1, null);	   
@@ -61,14 +59,6 @@ public class Robot {
 		ultrasonSensor = new UltrasonSensor(SensorPort.S4); 
 		//ultrasonSensor.enable();
 	}
-	public Robot(CustomWheelsChassis chassis, ColorSensor colorSensor, UltrasonSensor ultrasonSensor, Pliers gripper, Position position) {
-	       this.chassis = chassis;
-	       this.colorSensor = colorSensor;
-	       this.ultrasonSensor = ultrasonSensor;
-	       this.gripper = gripper;
-	       this.position = position;
-	    }
-	
 
 	public void start(char side, char line) {
 		position = new Position(side, line);
@@ -184,7 +174,7 @@ public class Robot {
 		int angleRetour = position.calculateAngleToReturnHome();
 		int cote; //-1 si plus proche du mur gauche / 1 si plus proche du mur droit
 		rotate(angleRetour); position.updateAngle(angleRetour);// update l'angle
-		
+
 		while(colorSensor.isWhiteDetected()==false) {
 			// MAJ de la position toute les 100ms
 			newTime = System.currentTimeMillis();
@@ -194,7 +184,7 @@ public class Robot {
 			}
 			//Detecte rien
 			if(suspectDetection()==0) wheels.travel(2500);
-			
+
 			// Detecte un palais
 			else if (suspectDetection()==2){ 	
 				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
@@ -217,41 +207,34 @@ public class Robot {
 		}	
 		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 	}
-	
-	
-	
-   public void test() {
+
+	public void test() {
 		pliers.open(true);
 		while(pliers.isMoving()) {}
 		pliers.close();
 	}
-   
-   
-   
-   public void AllerVersPuck(double targetX, double targetY) {
-       double dx = targetX - position.getX();
-       double dy = targetY - position.getY();
-       double targetAngle = Math.toDegrees(Math.atan2(dy, dx));
-       double distance = Math.sqrt(dx * dx + dy * dy);
-       double angleDiff = targetAngle - position.getOrientation();
-       chassis.rotate(angleDiff);
-       chassis.moveForward(distance);
-       
-       position.setX(targetX);
-       position.setY(targetY);
-       position.setOrientation(targetAngle);
-   }
 
+	public void AllerVersPuck(double targetX, double targetY) {
+		double dx = targetX - position.getX();
+		double dy = targetY - position.getY();
+		double targetAngle = Math.toDegrees(Math.atan2(dy, dx));
+		double distance = Math.sqrt(dx * dx + dy * dy);
+		double angleDiff = targetAngle - position.getOrientation();
+		wheels.rotate(angleDiff);
+		wheels.moveForward(distance);
 
-   public void getPuck() {
-		    double distance = ultrasonSensor.getDetectedDistance();
-		    boolean isTouche = touchSensor.isPressed();
-		    if (distance < 0.1 && isTouche) {
-		        gripper.open();
-		        chassis.moveForward(0.2); 
-		        gripper.close();
-	   }
-		    
-   }
-   
+		position.setX(targetX);
+		position.setY(targetY);
+		position.setOrientation(targetAngle);
+	}
+
+	public void getPuck() {
+		double distance = ultrasonSensor.getDetectedDistance();
+		boolean isTouche = touchSensor.isPressed();
+		if (distance < 0.1 && isTouche) {
+			pliers.open();
+			wheels.moveForward(0.2); 
+			pliers.close();
+		}
+	}
 }
