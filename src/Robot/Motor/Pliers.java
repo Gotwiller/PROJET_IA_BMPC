@@ -7,7 +7,7 @@ public class Pliers {
 	private NXTRegulatedMotor motor;
 	boolean closed;
 	
-	public Pliers(NXTRegulatedMotor motor) {
+	private Pliers(NXTRegulatedMotor motor) {
 		this.motor = motor;
 		closed = true;
 	}
