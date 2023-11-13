@@ -11,8 +11,7 @@ public class CustomWheelsChassis extends WheeledChassis {
     private EV3LargeRegulatedMotor rightMotor;
     private MovePilot MovePilot;
 
-
-	public CustomWheelsChassis(Wheel[] wheels, Object object, int dim, int i, Wheel[] wheels2, int typeDifferential) {
+	private CustomWheelsChassis(Wheel[] wheels, Object object, int dim, int i, Wheel[] wheels2, int typeDifferential) {
 		super(wheels, dim);
 	}
 
