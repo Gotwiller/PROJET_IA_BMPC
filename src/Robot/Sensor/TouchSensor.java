@@ -6,7 +6,7 @@ import lejos.hardware.sensor.SensorMode;
 
 public class TouchSensor extends EV3TouchSensor {
 
-	public TouchSensor(Port p) {
+	private TouchSensor(Port p) {
 		super(p);
 	}
 	public boolean isPressed() {

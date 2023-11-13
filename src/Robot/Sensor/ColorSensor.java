@@ -78,7 +78,7 @@ public class ColorSensor extends EV3ColorSensor {
 		});
 	}
 
-	public ColorSensor(Port p, EV3ColorSensor colorSensor) {
+	private ColorSensor(Port p, EV3ColorSensor colorSensor) {
 		super(p);
 		this.colorSensor = colorSensor;
         this.rgbMode = colorSensor.getRGBMode();
