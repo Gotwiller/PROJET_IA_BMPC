@@ -1,4 +1,8 @@
+package Robot;
 
+import java.lang.Object;
+
+import lejos.hardware.sensor.EV3ColorSensor;
 import Robot.Motor.CustomWheelsChassis;
 import Robot.Motor.Pliers;
 import Robot.Position.Position;
@@ -13,49 +17,58 @@ import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
+import lejos.hardware.Device;
+import lejos.hardware.sensor.BaseSensor;
+import lejos.hardware.sensor.AnalogSensor;
+import lejos.hardware.sensor.NXTLightSensor;
+import lejos.hardware.sensor.NXTColorSensor;
+import lejos.hardware.sensor.SensorMode;
+import lejos.robotics.SampleProvider;
+
+
 
 public class Robot {
 
 	public static final int WHEEL_DIAMETER= 56;
 	public static final float WHEEL_OFFSET_VALUE = 61.5f;
-	public static final int ACCEPTED_DISTANCE_ERROR = 50;	// in millimeter
-	public static final int MIN_WALL_DISTANCE = 150;		// in millimeter
+	public static final int ACCEPTED_DISTANCE_ERROR = 50;	// en millimetre
+	public static final int MIN_WALL_DISTANCE = 150;		// en millimetre
 
 	private Brick brick;
-
+	private CustomWheelsChassis chassis;
+	
 	private Position position;
 
 	private CustomWheelsChassis wheels;
 	private Pliers pliers;
-
+	private Pliers gripper;
 	private ColorSensor colorSensor;
 	private TouchSensor touchSensor;
 	private UltrasonSensor ultrasonSensor;
-
+	
 	public Robot() {
+		
 		brick = BrickFinder.getDefault();
 		
 		Wheel leftWheel = WheeledChassis.modelWheel(Motor.D, WHEEL_DIAMETER).offset(-WHEEL_OFFSET_VALUE);
 		Wheel rightWheel = WheeledChassis.modelWheel(Motor.C, WHEEL_DIAMETER).offset(WHEEL_OFFSET_VALUE);
 
-		wheels = new CustomWheelsChassis(new Wheel[]{leftWheel, rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
+		wheels = new CustomWheelsChassis(null, null, 0, 0, new Wheel[]{leftWheel, rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
 		pliers = new Pliers(Motor.A);
 
-		colorSensor = new ColorSensor(SensorPort.S1);	   
+		colorSensor = new ColorSensor(SensorPort.S1, null);	   
 		touchSensor = new TouchSensor(SensorPort.S3);		
 		ultrasonSensor = new UltrasonSensor(SensorPort.S4); 
 		//ultrasonSensor.enable();
 	}
-
-	public boolean isWhite() {
-		ColorSensor cs = new ColorSensor(SensorPort.S3);
-		cs.setFloodlight(false);
-		if (cs.isWhiteDetected()) {            
-			return true;
-		}     
-		else
-			return false;           
-	}
+	public Robot(CustomWheelsChassis chassis, ColorSensor colorSensor, UltrasonSensor ultrasonSensor, Pliers gripper, Position position) {
+	       this.chassis = chassis;
+	       this.colorSensor = colorSensor;
+	       this.ultrasonSensor = ultrasonSensor;
+	       this.gripper = gripper;
+	       this.position = position;
+	    }
+	
 
 	public void start(char side, char line) {
 		position = new Position(side, line);
@@ -167,25 +180,78 @@ public class Robot {
 	 * @param dodge If it's for dodge a object in front of the robot.
 	 */
 	private void rotateForBackHome(boolean dodge) {
-		// TODO
+		long newTime, time = System.currentTimeMillis();
+		int angleRetour = position.calculateAngleToReturnHome();
+		int cote; //-1 si plus proche du mur gauche / 1 si plus proche du mur droit
+		rotate(angleRetour); position.updateAngle(angleRetour);// update l'angle
+		
+		while(colorSensor.isWhiteDetected()==false) {
+			// MAJ de la position toute les 100ms
+			newTime = System.currentTimeMillis();
+			if(newTime-time > 100) {
+				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
+				time = newTime;
+			}
+			//Detecte rien
+			if(suspectDetection()==0) wheels.travel(2500);
+			
+			// Detecte un palais
+			else if (suspectDetection()==2){ 	
+				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				// Coté par lequel eviter
+				if (position.getX()<1000 && (position.getHome()=='g')||position.getX()>1000 && (position.getHome()=='b')) 
+					cote = -1; // Eviter par la droite
+				else cote= 1; // Eviter par la gauche
+				rotate(-45*cote); position.updateAngle(-45*cote);
+				// Cas ou le robot tourne de 45degres ET palais dans le champ
+				while (suspectDetection()==2) { 
+					rotate(45*cote); position.updateAngle(45*cote);
+					wheels.travel(100); 
+					wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+					rotate(-45*cote); position.updateAngle(-45*cote);
+				}
+				wheels.travel(200); 
+				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				rotate(45*cote); position.updateAngle(45*cote);
+			}
+		}	
+		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 	}
-
-	public void test() {
+	
+	
+	
+   public void test() {
 		pliers.open(true);
 		while(pliers.isMoving()) {}
 		pliers.close();
 	}
-	
+   
+   
+   
+   public void AllerVersPuck(double targetX, double targetY) {
+       double dx = targetX - position.getX();
+       double dy = targetY - position.getY();
+       double targetAngle = Math.toDegrees(Math.atan2(dy, dx));
+       double distance = Math.sqrt(dx * dx + dy * dy);
+       double angleDiff = targetAngle - position.getOrientation();
+       chassis.rotate(angleDiff);
+       chassis.moveForward(distance);
+       
+       position.setX(targetX);
+       position.setY(targetY);
+       position.setOrientation(targetAngle);
+   }
 
-	public class CustomRoueChassis extends WheeledChassis {
 
-    /**
-     * Constructeur for the CustomWheelsChassis class.
-     * @param wheels An aray of wheels used for the chassis.
-     * @param dim Dimension of the chassis.
-     */
-    public CustomRoueChassis(Wheel[] wheels, int dim) {
-        super(wheels, dim);
-    }
-
+   public void getPuck() {
+		    double distance = ultrasonSensor.getDetectedDistance();
+		    boolean isTouche = touchSensor.isPressed();
+		    if (distance < 0.1 && isTouche) {
+		        gripper.open();
+		        chassis.moveForward(0.2); 
+		        gripper.close();
+	   }
+		    
+   }
+   
 }

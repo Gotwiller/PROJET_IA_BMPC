@@ -18,11 +18,12 @@ public class Position {
 	
 	// Left = g (green) , right = b (blue)
 	private char home;
-
-	private int direction;
-	private int x;
-	private int y;
-
+	
+	private double x;
+	private double y;
+	private double orientation;
+	private double direction;
+	
 	public Position(char side, char startingColor) {
 		home = side;
 		if(side == 'g') {
@@ -45,15 +46,69 @@ public class Position {
 	 * 
 	 * @return positive = left, negative = right
 	 */
-	public int calculateAngleToReturnHome() {
+	
+	public Position(double x, double y, double orientation) {
+        this.x = x;
+        this.y = y;
+        this.orientation = normalizeAngle(orientation);
+    }
+
+    public double getX1() {
+        return x;
+    }
+
+    public void setX(double x) {
+        this.x = x;
+    }
+
+    public double getY1() {
+        return y;
+    }
+
+    public void setY(double y) {
+        this.y = y;
+    }
+
+    public double getOrientation() {
+        return orientation;
+    }
+
+    public void setOrientation(double orientation) {
+        this.orientation = normalizeAngle(orientation);
+    }
+
+    private double normalizeAngle(double angle) {
+        while (angle < 0) {
+            angle += 360;
+        }
+        while (angle >= 360) {
+            angle -= 360;
+        }
+        return angle;
+    }
+
+    public void move(double distance) {
+        // Update the position based on the current heading and the given distance
+        double radianOrientation = Math.toRadians(orientation);
+        x += distance * Math.cos(radianOrientation);
+        y += distance * Math.sin(radianOrientation);
+    }
+
+    public void rotate(double angle) {
+        // Rotate the heading by the given angle
+        orientation += angle;
+        orientation = normalizeAngle(orientation);
+    }
+
+	public double calculateAngleToReturnHome() {
 		if(home == 'g') return 180-direction;
 		if(direction > 180) return 360-direction;
 		return -direction;
 	}
 
-	public int getX() { return x; }
-	public int getY() { return y; }
-	public int getDirection() { return direction; }
+	public double getX() { return x; }
+	public double getY() { return y; }
+	public double getDirection() { return direction; }
 	public char getHome() { return home; }
 
 	/**
@@ -61,7 +116,7 @@ public class Position {
 	 * 
 	 * @param angle The angle in ° 
 	 */
-	public void rotationPerformed(int angle) {
+	public void updateAngle(int angle) {
 		direction += angle;
 		if(direction < 0) direction += 360;
 		else direction %= 360;
@@ -72,9 +127,9 @@ public class Position {
 	 * 
 	 * @return The expected distance in millimeters.
 	 */
-	public int getExpectedDistance() {
+	public double getExpectedDistance() {
 		double teta_0 = Math.toRadians(direction%90);
-		int o,a;
+		double o,a;
 		if(direction < 90) {
 			o = 2000-y;
 			a = 2700-x;
@@ -101,7 +156,7 @@ public class Position {
 	 * @param linearSpeed In millimeters per seconds
 	 * @param time Time in milliseconds since the last update.
 	 */
-    public void update(double linearSpeed, long time) {
+    public void updateLinear(double linearSpeed, long time) {
         double distance = linearSpeed*time/1000;
         double theta = Math.toRadians(direction);
 
