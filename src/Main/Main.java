@@ -9,7 +9,7 @@ public class Main {
 
 	private static int menu(int choix) {
 		LCD.clear();
-		char c0=choix==0?'x':'o',c1=choix==1?'x':'o',c2=choix==2?'x':'o',c3=choix==3?'x':'o',c4=choix==3?'x':'o';
+		char c0=choix==0?'x':'o',c1=choix==1?'x':'o',c2=choix==2?'x':'o',c3=choix==3?'x':'o',c4=choix==4?'x':'o';
 		LCD.drawString("Selectionner un choix :", 0, 0);
 		LCD.drawString(c0+" : Ouvrir/Fermer les pinces", 0, 1);
 		LCD.drawString(c1+" : Calibrer les couleurs", 0, 2);
