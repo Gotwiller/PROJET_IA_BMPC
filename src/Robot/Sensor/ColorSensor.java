@@ -15,7 +15,6 @@ import lejos.robotics.Color;
 import lejos.robotics.SampleProvider;
 
 public class ColorSensor extends EV3ColorSensor {
-	private EV3ColorSensor colorSensor;
     private SampleProvider rgbMode;
     private float[] sample;
     private Calibration calibration;
@@ -78,10 +77,9 @@ public class ColorSensor extends EV3ColorSensor {
 		});
 	}
 
-	private ColorSensor(Port p, EV3ColorSensor colorSensor) {
+	public ColorSensor(Port p) {
 		super(p);
-		this.colorSensor = colorSensor;
-        this.rgbMode = colorSensor.getRGBMode();
+        this.rgbMode = this.getRGBMode();
         this.sample = new float[rgbMode.sampleSize()];
         this.calibration = new Calibration();
 	}
@@ -123,7 +121,7 @@ public class ColorSensor extends EV3ColorSensor {
 
 	    public void close() {
 	        //arrete le capteur quand tache finit
-	        colorSensor.close();
+	        this.close();
 	    }
 	    
 	    
