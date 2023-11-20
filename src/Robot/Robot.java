@@ -33,6 +33,17 @@ public class Robot {
 	public static final float WHEEL_OFFSET_VALUE = 61.5f;
 	public static final int ACCEPTED_DISTANCE_ERROR = 50;	// en millimetre
 	public static final int MIN_WALL_DISTANCE = 150;		// en millimetre
+	
+	private static final int ANGLE_45 = 45;
+	private static final int ANGLE_180 = 180;
+	private static final int MOINS_ANGLE_45 = -45;
+	private static final int MILLIEU_TERRAIN = 1000;
+	private static final int TIMER_UPDATE = 100;
+	private static final int DISTANCE_ENTRE_2CAMPS = 2500;
+	private static final int DISTANCE = 200;
+	private static final int GAUCHE = -1;
+	private static final int DROITE = 1;
+	
 
 	private Brick brick;
 
@@ -168,50 +179,82 @@ public class Robot {
 	 * Do the best rotation to back home.
 	 * 
 	 * @param dodge If it's for dodge a object in front of the robot.
-	 */
-	private void rotateForBackHome(boolean dodge) {
+	 */	
+	
+	private void rotateForBackHome() {
 		long newTime, time = System.currentTimeMillis();
-		int angleRetour = position.calculateAngleToReturnHome();
-		int cote; //-1 si plus proche du mur gauche / 1 si plus proche du mur droit
-		rotate(angleRetour); position.updateAngle(angleRetour);// update l'angle
-
+		int angleRetour = (int)position.calculateAngleToReturnHome();
+		int cote; // -1 si plus proche du mur gauche / 1 si plus proche du mur droit
+		rotate(angleRetour-ANGLE_180); position.updateAngle(angleRetour-ANGLE_180);// update l'angle
+		while (wheels.isMoving());
+		wheels.travel(DISTANCE_ENTRE_2CAMPS);  
 		while(colorSensor.isWhiteDetected()==false) {
 			// MAJ de la position toute les 100ms
 			newTime = System.currentTimeMillis();
-			if(newTime-time > 100) {
+			if(newTime-time > TIMER_UPDATE) {
 				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
 				time = newTime;
 			}
+			
+			while(wheels.isMoving()) {
+				// Update the position if necessary (every 2 seconds)
+				newTime = System.currentTimeMillis();
+				if(newTime-time > TIMER_UPDATE) {
+					position.updateLinear(wheels.getLinearSpeed(),newTime-time);
+				}
+					time = newTime;
+			}
+			
 			//Detecte rien
-			if(suspectDetection()==0) wheels.travel(2500);
-
+			if(suspectDetection()==0) continue;
+				
 			// Detecte un palais
 			else if (suspectDetection()==2){ 	
 				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 				// Coté par lequel eviter
-				if (position.getX()<1000 && (position.getHome()=='g')||position.getX()>1000 && (position.getHome()=='b')) 
-					cote = -1; // Eviter par la droite
-				else cote= 1; // Eviter par la gauche
-				rotate(-45*cote); position.updateAngle(-45*cote);
+				if (position.getX()<MILLIEU_TERRAIN && (position.getHome()=='g')||position.getX()>MILLIEU_TERRAIN && (position.getHome()=='b')) 
+					cote = GAUCHE; // Eviter par la droite
+				else cote= DROITE; // Eviter par la gauche
+					rotate(MOINS_ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(MOINS_ANGLE_45*cote);
 				// Cas ou le robot tourne de 45degres ET palais dans le champ
 				while (suspectDetection()==2) { 
-					rotate(45*cote); position.updateAngle(45*cote);
-					wheels.travel(100); 
+					rotate(ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(ANGLE_45*cote);
+					wheels.travel(100); while(wheels.isMoving());
 					wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-					rotate(-45*cote); position.updateAngle(-45*cote);
+					rotate(MOINS_ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(MOINS_ANGLE_45*cote);
 				}
-				wheels.travel(200); 
+				wheels.travel(DISTANCE); while (wheels.isMoving());
 				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-				rotate(45*cote); position.updateAngle(45*cote);
+				rotate(ANGLE_45*cote);while (wheels.isMoving()); position.updateAngle(ANGLE_45*cote);
 			}
-		}	
+		}
 		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-	}
+		}
 
 	public void test() {
-		pliers.open(true);
-		while(pliers.isMoving()) {}
-		pliers.close();
+		/*position = new Position('b','y');
+		wheels.travel(1500); 
+		while (wheels.isMoving());
+		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis());
+		wheels.rotate(30);
+		while (wheels.isMoving());
+		position.updateAngle(30);
+		rotateForBackHome();*/
+		//LCD.drawString(colorSensor.toString(),0 ,0 ); // Utiliser instance car Class est static
+		//return Button.waitForAnyPress();
+		
+		for(int i =0; i<10;i++) {
+			if(suspectDetection()==0) {
+				wheels.travel(50);
+				while (wheels.isMoving());
+			}
+			
+			else if(suspectDetection()==2) {
+				wheels.rotate(50);
+				while (wheels.isMoving());
+				wheels.stop();
+			}
+		}
 	}
 
 	public void AllerVersPuck(double targetX, double targetY) {
