@@ -185,7 +185,7 @@ public class Robot {
 		long newTime, time = System.currentTimeMillis();
 		int angleRetour = (int)position.calculateAngleToReturnHome();
 		int cote; // -1 si plus proche du mur gauche / 1 si plus proche du mur droit
-		rotate(angleRetour-ANGLE_180); position.updateAngle(angleRetour-ANGLE_180);// update l'angle
+		rotate(angleRetour); position.updateAngle(angleRetour);// update l'angle
 		while (wheels.isMoving());
 		wheels.travel(DISTANCE_ENTRE_2CAMPS);  
 		while(colorSensor.isWhiteDetected()==false) {
