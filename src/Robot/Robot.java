@@ -54,7 +54,7 @@ public class Robot {
 		wheels = new CustomWheelsChassis(new Wheel[]{leftWheel, rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
 		pliers = new Pliers(Motor.A);
 
-		colorSensor = new ColorSensor(SensorPort.S1, null);	   
+		colorSensor = new ColorSensor(SensorPort.S1);	   
 		touchSensor = new TouchSensor(SensorPort.S3);		
 		ultrasonSensor = new UltrasonSensor(SensorPort.S4); 
 		//ultrasonSensor.enable();

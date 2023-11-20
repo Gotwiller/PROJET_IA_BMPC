@@ -5,7 +5,7 @@ import lejos.hardware.sensor.EV3UltrasonicSensor;
 
 public class UltrasonSensor extends EV3UltrasonicSensor {
 
-	private UltrasonSensor(Port p) {
+	public UltrasonSensor(Port p) {
 		super(p);
 	}
 
