@@ -1,5 +1,6 @@
 package Main;
 
+import Robot.Robot;
 import lejos.hardware.Button;
 import lejos.hardware.lcd.LCD;
 
@@ -79,14 +80,14 @@ public class Main {
 		} // Play Green Side
 		else if(choix == 2) {
 			char color = selectStartingLing();
-			; // TODO if(color!='x') new Robot().start('g',color);
+			if(color!='x') new Robot().start('g',color);
 		} // Play Blue Side
 		else if(choix == 3) {
 			char color = selectStartingLing();
-			if(color!='x') ; // TODO new Robot().start('b',color);
+			if(color!='x') new Robot().start('b',color);
 		} // Do some test
 		else if(choix == 4) {
-			; // TODO new Robot().test();
+			new Robot().test();
 		}
 	}
 }
