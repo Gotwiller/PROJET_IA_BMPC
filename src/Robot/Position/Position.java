@@ -34,7 +34,7 @@ public class Position {
      * @param startingColor The starting color of the robot ('r' for red, 'y' for yellow, 'b' for black).
      */
 	public Position(char side, char startingColor) {
-		home = side;
+		home = side=='b'?'g':'b';
 		if(side == 'g') {
 			x = LEFT_WHITE_LINE;
 			direction = 0;
