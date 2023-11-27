@@ -1,8 +1,5 @@
 package Robot;
 
-import java.lang.Object;
-
-import lejos.hardware.sensor.EV3ColorSensor;
 import Robot.Motor.CustomWheelsChassis;
 import Robot.Motor.Pliers;
 import Robot.Position.Position;
@@ -11,21 +8,9 @@ import Robot.Sensor.TouchSensor;
 import Robot.Sensor.UltrasonSensor;
 import lejos.hardware.Brick;
 import lejos.hardware.BrickFinder;
-import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.Motor;
-import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
-import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
-import lejos.hardware.Device;
-import lejos.hardware.sensor.BaseSensor;
-import lejos.hardware.sensor.AnalogSensor;
-import lejos.hardware.sensor.NXTLightSensor;
-import lejos.hardware.sensor.NXTColorSensor;
-import lejos.hardware.sensor.SensorMode;
-import lejos.robotics.SampleProvider;
-
-
 
 public class Robot {
 
@@ -55,6 +40,13 @@ public class Robot {
 	private TouchSensor touchSensor;
 	private UltrasonSensor ultrasonSensor;
 
+    public Position getPosition() { return position; }
+    public CustomWheelsChassis getWheels() { return wheels; }
+    public Pliers getPliers() { return pliers; }
+    public ColorSensor getColorSensor() { return colorSensor; }
+    public TouchSensor getTouchSensor() { return touchSensor; }
+    public UltrasonSensor getUltrasonSensor() { return ultrasonSensor; }
+	
 	public Robot() {
 
 		brick = BrickFinder.getDefault();
