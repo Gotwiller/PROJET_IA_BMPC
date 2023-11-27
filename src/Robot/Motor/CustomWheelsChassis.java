@@ -1,7 +1,7 @@
 package Robot.Motor;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
-
+import lejos.hardware.motor.Motor;
 import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
 import lejos.robotics.navigation.MovePilot;

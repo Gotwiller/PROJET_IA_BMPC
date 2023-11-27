@@ -59,10 +59,10 @@ public class Robot {
 
 		brick = BrickFinder.getDefault();
 
-		Wheel leftWheel = WheeledChassis.modelWheel(Motor.D, WHEEL_DIAMETER).offset(-WHEEL_OFFSET_VALUE);
-		Wheel rightWheel = WheeledChassis.modelWheel(Motor.C, WHEEL_DIAMETER).offset(WHEEL_OFFSET_VALUE);
+		//Wheel leftWheel = WheeledChassis.modelWheel(Motor.D, WHEEL_DIAMETER).offset(-WHEEL_OFFSET_VALUE);
+		//Wheel rightWheel = WheeledChassis.modelWheel(Motor.C, WHEEL_DIAMETER).offset(WHEEL_OFFSET_VALUE);
 
-		wheels = new CustomWheelsChassis(new Wheel[]{leftWheel, rightWheel}, WheeledChassis.TYPE_DIFFERENTIAL);
+		wheels = new CustomWheelsChassis(WHEEL_DIAMETER, WheeledChassis.TYPE_DIFFERENTIAL);
 		pliers = new Pliers(Motor.A);
 
 		colorSensor = new ColorSensor(SensorPort.S1);	   
