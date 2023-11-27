@@ -231,7 +231,7 @@ public class Robot {
 		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 		}
 
-	public void test() {
+	//public void test() {
 		/*position = new Position('b','y');
 		wheels.travel(1500); 
 		while (wheels.isMoving());
@@ -243,7 +243,7 @@ public class Robot {
 		//LCD.drawString(colorSensor.toString(),0 ,0 ); // Utiliser instance car Class est static
 		//return Button.waitForAnyPress();
 		
-		for(int i =0; i<10;i++) {
+		/*for(int i =0; i<10;i++) {
 			if(suspectDetection()==0) {
 				wheels.travel(50);
 				while (wheels.isMoving());
@@ -255,7 +255,13 @@ public class Robot {
 				wheels.stop();
 			}
 		}
-	}
+	}*/
+	
+	public void test() {
+		   position = new Position(0, 0, 0); 
+		   allerVersPuck(200, 0);
+		   getPuck();
+		}
 
 	 public void allerVersPuck(double distance, double targetY) {
 	      //double dx = targetX - position.getX();
@@ -272,7 +278,7 @@ public class Robot {
 	      // position.setOrientation(targetAngle);
 	   }
 
-
+	 
 	   
 	   public void getPuck() {
 			   // double distance = ultrasonSensor.getDetectedDistance();
