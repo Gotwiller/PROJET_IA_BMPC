@@ -257,27 +257,35 @@ public class Robot {
 		}
 	}
 
-	public void AllerVersPuck(double targetX, double targetY) {
-		double dx = targetX - position.getX();
-		double dy = targetY - position.getY();
-		double targetAngle = Math.toDegrees(Math.atan2(dy, dx));
-		double distance = Math.sqrt(dx * dx + dy * dy);
-		double angleDiff = targetAngle - position.getOrientation();
-		wheels.rotate(angleDiff);
-		wheels.moveForward(distance);
+	 public void allerVersPuck(double distance, double targetY) {
+	      //double dx = targetX - position.getX();
+	      //double dy = targetY - position.getY();
+	      // double targetAngle = Math.toDegrees(Math.atan2(dy, dx));
+	      //double distance = Math.sqrt(dx * dx + dy * dy);
+	      // double angleDiff = targetAngle - position.getOrientation();
+	      // wheels.rotate(angleDiff);
+	       while(wheels.isMoving());
+	       wheels.moveForward(distance);
+	       while(wheels.isMoving());
+	       //position.setX(targetX);
+	       position.setY(targetY);
+	      // position.setOrientation(targetAngle);
+	   }
 
-		position.setX(targetX);
-		position.setY(targetY);
-		position.setOrientation(targetAngle);
-	}
 
-	public void getPuck() {
-		double distance = ultrasonSensor.getDetectedDistance();
-		boolean isTouche = touchSensor.isPressed();
-		if (distance < 0.1 && isTouche) {
-			pliers.open();
-			wheels.moveForward(0.2); 
-			pliers.close();
-		}
+	   
+	   public void getPuck() {
+			   // double distance = ultrasonSensor.getDetectedDistance();
+			    boolean isTouche = touchSensor.isPressed();
+			    while(wheels.isMoving()) 
+			    if (isTouche) {
+			        //pliers.open();
+			        while(wheels.isMoving());
+			        wheels.moveForward(0.2); 
+			        while(wheels.isMoving());
+			        pliers.close();
+		   }
+			    
+	   }
+	   
 	}
-}

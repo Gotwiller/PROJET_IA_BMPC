@@ -1,6 +1,7 @@
 package Robot.Motor;
 
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
+
 import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
 import lejos.robotics.navigation.MovePilot;
@@ -8,39 +9,46 @@ import lejos.robotics.navigation.MovePilot;
 public class CustomWheelsChassis extends WheeledChassis {
 	private EV3LargeRegulatedMotor leftMotor;
     private EV3LargeRegulatedMotor rightMotor;
-    private MovePilot MovePilot;
+  
+    
+    
 
-	public CustomWheelsChassis(Wheel[] wheels, int dim) {
-		super(wheels, dim);
-	}
 
-    public void moveForward() {
-		MovePilot.forward();
-    }
+	public CustomWheelsChassis(double wheelDiameter, double TRACK_WIDTH) {
+		 super(new Wheel[] {WheeledChassis.modelWheel(Motor.D, wheelDiameter).offset(-70),
+				 WheeledChassis.modelWheel(Motor.C, wheelDiameter).offset(70)}, 
+				 WheeledChassis.TYPE_DIFFERENTIAL);
+		
+		 
+	        
+	        
+	       
+	}	
 
-    public void moveBackward() {
-        MovePilot.backward();
+	
+
+
+    public void moveBackward(double distance) {
+        this.travel(-distance);
     }
 
     public void stop() {
-        MovePilot.stop();
+        super.stop();
     }
 
-    public void turnLeft() {
-        MovePilot.rotateLeft();
+    public void rotateLeft(double degrees) {
+    	super.rotate(degrees);
+        
     }
 
-    public void turnRight() {
-        MovePilot.rotateRight();
+    public void turnRight(double degrees) {
+    	 super.rotate(-degrees);
     }
 
-    public void close() {
-        leftMotor.close();
-        rightMotor.close();
-    }
-
+   
 	public void moveForward(double distance) {
-		MovePilot.forward();
+		this.travel(distance);
 		
 	}
+	
 }
