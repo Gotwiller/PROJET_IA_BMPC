@@ -9,8 +9,8 @@ public class TouchSensor extends EV3TouchSensor {
 		super(p);
 	}
 	public boolean isPressed() {
-		if (getTouchMode()== getMode(0))
-		return false;
-		else return true;
+		float[] touch = new float[1];
+		getTouchMode().fetchSample(touch, 0);
+		return touch[0]==1;
 	}
 }
