@@ -26,9 +26,9 @@ public class Pliers {
 	public void open(boolean force) {
 		if (closed || force) {
 			motor.rotate(360*2);
+			while(isMoving());
 			closed = false;
 		}
-		while(isMoving());
 	}
 	
 	/**
@@ -45,9 +45,9 @@ public class Pliers {
 	public void close(boolean force) {
 		if (!closed || force) {
 			motor.rotate(-360*2);
+			while(isMoving());
 			closed = true;
 		}
-		while(isMoving());
 	}
 	
 	/**
@@ -74,5 +74,9 @@ public class Pliers {
 	 */
 	public boolean isMoving() {
 		return motor.isMoving();
+	}
+
+	public void setClosed(boolean closed) {
+		this.closed=closed;
 	}
 }
