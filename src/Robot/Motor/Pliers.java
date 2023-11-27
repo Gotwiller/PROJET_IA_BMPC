@@ -28,6 +28,7 @@ public class Pliers {
 			motor.rotate(360*2);
 			closed = false;
 		}
+		while(isMoving());
 	}
 	
 	/**
@@ -46,6 +47,7 @@ public class Pliers {
 			motor.rotate(-360*2);
 			closed = true;
 		}
+		while(isMoving());
 	}
 	
 	/**
