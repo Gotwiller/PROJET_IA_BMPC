@@ -1,5 +1,8 @@
 package Robot;
 
+import java.lang.Object;
+
+import lejos.hardware.sensor.EV3ColorSensor;
 import Robot.Motor.CustomWheelsChassis;
 import Robot.Motor.Pliers;
 import Robot.Position.Position;
@@ -8,9 +11,21 @@ import Robot.Sensor.TouchSensor;
 import Robot.Sensor.UltrasonSensor;
 import lejos.hardware.Brick;
 import lejos.hardware.BrickFinder;
+import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.Motor;
+import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
+import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
+import lejos.hardware.Device;
+import lejos.hardware.sensor.BaseSensor;
+import lejos.hardware.sensor.AnalogSensor;
+import lejos.hardware.sensor.NXTLightSensor;
+import lejos.hardware.sensor.NXTColorSensor;
+import lejos.hardware.sensor.SensorMode;
+import lejos.robotics.SampleProvider;
+
+
 
 public class Robot {
 
@@ -18,7 +33,7 @@ public class Robot {
 	public static final float WHEEL_OFFSET_VALUE = 61.5f;
 	public static final int ACCEPTED_DISTANCE_ERROR = 50;	// en millimetre
 	public static final int MIN_WALL_DISTANCE = 150;		// en millimetre
-	
+
 	private static final int ANGLE_45 = 45;
 	private static final int ANGLE_180 = 180;
 	private static final int MOINS_ANGLE_45 = -45;
@@ -28,7 +43,8 @@ public class Robot {
 	private static final int DISTANCE = 200;
 	private static final int GAUCHE = -1;
 	private static final int DROITE = 1;
-	
+
+
 
 	private Brick brick;
 
@@ -40,13 +56,13 @@ public class Robot {
 	private TouchSensor touchSensor;
 	private UltrasonSensor ultrasonSensor;
 
-    public Position getPosition() { return position; }
-    public CustomWheelsChassis getWheels() { return wheels; }
-    public Pliers getPliers() { return pliers; }
-    public ColorSensor getColorSensor() { return colorSensor; }
-    public TouchSensor getTouchSensor() { return touchSensor; }
-    public UltrasonSensor getUltrasonSensor() { return ultrasonSensor; }
-	
+	public Position getPosition() { return position; }
+	public CustomWheelsChassis getWheels() { return wheels; }
+	public Pliers getPliers() { return pliers; }
+	public ColorSensor getColorSensor() { return colorSensor; }
+	public TouchSensor getTouchSensor() { return touchSensor; }
+	public UltrasonSensor getUltrasonSensor() { return ultrasonSensor; }
+
 	public Robot() {
 
 		brick = BrickFinder.getDefault();
@@ -172,7 +188,7 @@ public class Robot {
 	 * 
 	 * @param dodge If it's for dodge a object in front of the robot.
 	 */	
-	
+
 	private void rotateForBackHome() {
 		long newTime, time = System.currentTimeMillis();
 		int angleRetour = (int)position.calculateAngleToReturnHome();
@@ -187,19 +203,19 @@ public class Robot {
 				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
 				time = newTime;
 			}
-			
+
 			while(wheels.isMoving()) {
 				// Update the position if necessary (every 2 seconds)
 				newTime = System.currentTimeMillis();
 				if(newTime-time > TIMER_UPDATE) {
 					position.updateLinear(wheels.getLinearSpeed(),newTime-time);
 				}
-					time = newTime;
+				time = newTime;
 			}
-			
+
 			//Detecte rien
 			if(suspectDetection()==0) continue;
-				
+
 			// Detecte un palais
 			else if (suspectDetection()==2){ 	
 				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
@@ -207,7 +223,7 @@ public class Robot {
 				if (position.getX()<MILLIEU_TERRAIN && (position.getHome()=='g')||position.getX()>MILLIEU_TERRAIN && (position.getHome()=='b')) 
 					cote = GAUCHE; // Eviter par la droite
 				else cote= DROITE; // Eviter par la gauche
-					rotate(MOINS_ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(MOINS_ANGLE_45*cote);
+				rotate(MOINS_ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(MOINS_ANGLE_45*cote);
 				// Cas ou le robot tourne de 45degres ET palais dans le champ
 				while (suspectDetection()==2) { 
 					rotate(ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(ANGLE_45*cote);
@@ -221,10 +237,10 @@ public class Robot {
 			}
 		}
 		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-		}
+	}
 
 	//public void test() {
-		/*position = new Position('b','y');
+	/*position = new Position('b','y');
 		wheels.travel(1500); 
 		while (wheels.isMoving());
 		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis());
@@ -232,15 +248,15 @@ public class Robot {
 		while (wheels.isMoving());
 		position.updateAngle(30);
 		rotateForBackHome();*/
-		//LCD.drawString(colorSensor.toString(),0 ,0 ); // Utiliser instance car Class est static
-		//return Button.waitForAnyPress();
-		
-		/*for(int i =0; i<10;i++) {
+	//LCD.drawString(colorSensor.toString(),0 ,0 ); // Utiliser instance car Class est static
+	//return Button.waitForAnyPress();
+
+	/*for(int i =0; i<10;i++) {
 			if(suspectDetection()==0) {
 				wheels.travel(50);
 				while (wheels.isMoving());
 			}
-			
+
 			else if(suspectDetection()==2) {
 				wheels.rotate(50);
 				while (wheels.isMoving());
@@ -248,42 +264,52 @@ public class Robot {
 			}
 		}
 	}*/
-	
+
 	public void test() {
-		   position = new Position(0, 0, 0); 
-		   allerVersPuck(200, 0);
-		   getPuck();
+		pliers.setClosed(true);
+		pliers.open();
+		position = new Position(0, 0, 0); 
+		boolean b = allerVersPuck(200);
+		if(b)
+			getPuck();
+		else {
+			pliers.close();
 		}
-
-	 public void allerVersPuck(double distance, double targetY) {
-	      //double dx = targetX - position.getX();
-	      //double dy = targetY - position.getY();
-	      // double targetAngle = Math.toDegrees(Math.atan2(dy, dx));
-	      //double distance = Math.sqrt(dx * dx + dy * dy);
-	      // double angleDiff = targetAngle - position.getOrientation();
-	      // wheels.rotate(angleDiff);
-	       while(wheels.isMoving());
-	       wheels.moveForward(distance);
-	       while(wheels.isMoving());
-	       //position.setX(targetX);
-	       position.setY(targetY);
-	      // position.setOrientation(targetAngle);
-	   }
-
-	 
-	   
-	   public void getPuck() {
-			   // double distance = ultrasonSensor.getDetectedDistance();
-			    boolean isTouche = touchSensor.isPressed();
-			    while(wheels.isMoving()) 
-			    if (isTouche) {
-			        //pliers.open();
-			        while(wheels.isMoving());
-			        wheels.moveForward(0.2); 
-			        while(wheels.isMoving());
-			        pliers.close();
-		   }
-			    
-	   }
-	   
 	}
+
+	public boolean allerVersPuck(double distance) {
+		distance+=50;
+		//double dx = targetX - position.getX();
+		//double dy = targetY - position.getY();
+		// double targetAngle = Math.toDegrees(Math.atan2(dy, dx));
+		//double distance = Math.sqrt(dx * dx + dy * dy);
+		// double angleDiff = targetAngle - position.getOrientation();
+		// wheels.rotate(angleDiff);
+		long times = System.currentTimeMillis();
+		wheels.moveForward(distance);
+		while(wheels.isMoving()) {
+			if(touchSensor.isPressed()) {
+				wheels.stop();
+				position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis() - times);
+				return true;
+			}
+
+		}
+		position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis() - times);
+		return false;
+		//position.setX(targetX);
+
+		// position.setOrientation(targetAngle);
+	}
+
+
+
+	public void getPuck() {
+		// double distance = ultrasonSensor.getDetectedDistance();
+		//pliers.open();
+		wheels.moveBackward(1); 
+		while(wheels.isMoving());
+		pliers.close();
+	}
+
+}
