@@ -297,7 +297,7 @@ public class Robot {
 		}
 		position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis() - times);
 		return false;
-		//position.setX(targetX);
+		
 
 		// position.setOrientation(targetAngle);
 	}
