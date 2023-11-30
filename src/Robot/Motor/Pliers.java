@@ -25,8 +25,8 @@ public class Pliers {
 	 */
 	public void open(boolean force) {
 		if (closed || force) {
-			motor.rotate(360*2);
-			while(isMoving());
+			motor.rotate(360*3);
+			while(motor.isMoving()) {}
 			closed = false;
 		}
 	}
@@ -44,8 +44,8 @@ public class Pliers {
 	 */
 	public void close(boolean force) {
 		if (!closed || force) {
-			motor.rotate(-360*2);
-			while(isMoving());
+			motor.rotate(-360*3);
+			while(motor.isMoving()) {}
 			closed = true;
 		}
 	}
@@ -68,14 +68,10 @@ public class Pliers {
 	}
 
 	/**
-	 * Checks if the motor is in motion.
-	 *
-	 * @return true if the motor is in motion, else false.
+	 * Set the "closed" value to true or false.
+	 * 
+	 * @param closed
 	 */
-	public boolean isMoving() {
-		return motor.isMoving();
-	}
-
 	public void setClosed(boolean closed) {
 		this.closed=closed;
 	}
