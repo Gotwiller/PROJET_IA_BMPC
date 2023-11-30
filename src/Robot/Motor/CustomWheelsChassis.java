@@ -37,12 +37,12 @@ public class CustomWheelsChassis extends WheeledChassis {
     }
 
     public void rotateLeft(double degrees) {
-    	super.rotate(degrees);
+    	super.rotate(-degrees);
         
     }
 
-    public void turnRight(double degrees) {
-    	 super.rotate(-degrees);
+    public void rotateRight(double degrees) {
+    	 super.rotate(degrees);
     }
 
    
