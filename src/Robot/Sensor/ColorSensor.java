@@ -22,7 +22,7 @@ public class ColorSensor extends EV3ColorSensor {
 	private static final Map<Integer, int[]> COLORS = new HashMap<>();
 
 	private static final String calibratedColorsFileName = "colors.txt";
-	private static final int RGB_TOLERANCE = 45;
+	private static final int RGB_TOLERANCE = 30;
 
 	/**
 	 * Instantiates the RGB color values with those saved in the colors.txt file
