@@ -149,33 +149,32 @@ public class Main {
 			// Exit : Action = -2
 			if(action==-2) break;
 			// Main Menu : Action = -1
-			if(action == -1) continue;
+		} while(action == -1); 
 
-			// A robot action
-			RobotAction.action = action;
-			RobotAction ra = new RobotAction();
-			ra.start();
-			ForcedStop fs= new ForcedStop();
-			fs.start();
-			do {
-				LCD.clear();
-				LCD.drawString("Is runing ? "+ra.isAlive(), 0, 1);
-				LCD.drawString("Last Press : "+ ForcedStop.button, 0, 2);
-				LCD.drawString("Escape int : "+Button.ID_ESCAPE, 0, 3);
-				Delay.msDelay(1000);
-			} while (ra.isAlive() && ForcedStop.button != Button.ID_ESCAPE);
-			if(ra.isAlive()) {
-				ra.interrupt();
-				ForcedStop.button=-1;
-				LCD.clear();
-				LCD.drawString("Escape", 0, 3);
-				Delay.msDelay(3000);
-			} else {
-				LCD.clear();
-				LCD.drawString("End", 0, 3);
-				Delay.msDelay(3000);
-			}
+		// A robot action
+		RobotAction.action = action;
+		RobotAction ra = new RobotAction();
+		ra.start();
+		ForcedStop fs= new ForcedStop();
+		fs.start();
+		do {
 			LCD.clear();
-		} while(true); 
+			LCD.drawString("Is runing ? "+ra.isAlive(), 0, 1);
+			LCD.drawString("Last Press : "+ ForcedStop.button, 0, 2);
+			LCD.drawString("Escape int : "+Button.ID_ESCAPE, 0, 3);
+			Delay.msDelay(1000);
+		} while (ra.isAlive() && ForcedStop.button != Button.ID_ESCAPE);
+		if(ra.isAlive()) {
+			ra.interrupt();
+			ForcedStop.button=-1;
+			LCD.clear();
+			LCD.drawString("Escape", 0, 3);
+			Delay.msDelay(3000);
+		} else {
+			LCD.clear();
+			LCD.drawString("End", 0, 3);
+			Delay.msDelay(3000);
+		}
+		LCD.clear();
 	}
 }
