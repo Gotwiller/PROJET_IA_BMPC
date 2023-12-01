@@ -282,8 +282,8 @@ public class Robot {
 	        while (wheels.isMoving()) { 
 	        	avoid();
 	        }
-	        }
-		}
+	}
+	}
 		
 		// Detecte si detection proche et évite l'obstacle par la droite
 		
