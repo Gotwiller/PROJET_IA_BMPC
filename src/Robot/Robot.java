@@ -266,16 +266,44 @@ public class Robot {
 	}*/
 
 	public void test() {
-		pliers.setClosed(true);
-		pliers.open();
-		position = new Position(0, 0, 0); 
-		boolean b = allerVersPuck(200);
-		if(b)
-			getPuck();
-		else {
-			pliers.close();
+	        long time = System.currentTimeMillis();
+	        position = new Position(300,1500,0);
+	        wheels.rotateRight(45);
+	        while (wheels.isMoving());
+	        position.updateAngle(45);
+	        wheels.travel(300);
+	        while (wheels.isMoving());
+	        position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+	        wheels.rotateLeft(45);
+	        while (wheels.isMoving());
+	        position.updateAngle(MOINS_ANGLE_45);
+	        while (ultrasonSensor.getDetectedDistance()>=30) {
+	        wheels.travel(1000);
+	        while (wheels.isMoving()) { 
+	        	avoid();
+	        }
+	        }
 		}
-	}
+		
+		// Detecte si detection proche et évite l'obstacle par la droite
+		
+		public void avoid () {
+			int detected = ultrasonSensor.getDetectedDistance();
+			long time = System.currentTimeMillis();
+			Delay.msDelay(20);
+			if (ultrasonSensor.getDetectedDistance()<= 200) {
+				wheels.stop();
+				wheels.rotateRight(90);
+				while (wheels.isMoving());
+	        	position.updateAngle(90);
+	        	wheels.travel(300);
+	        	while (wheels.isMoving());
+	        	position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+	        	wheels.rotateLeft(90);
+	        	while (wheels.isMoving());
+	        	position.updateAngle(-90);
+			}
+		}
 
 	public boolean allerVersPuck(double distance) {
 		distance+=50;
