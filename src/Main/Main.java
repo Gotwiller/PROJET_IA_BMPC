@@ -166,6 +166,7 @@ public class Main {
 			} while (ra.isAlive() && ForcedStop.button != Button.ID_ESCAPE);
 			if(ra.isAlive()) {
 				ra.interrupt();
+				ForcedStop.button=-1;
 				LCD.clear();
 				LCD.drawString("Escape", 0, 3);
 				Delay.msDelay(3000);
