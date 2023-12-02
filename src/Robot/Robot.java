@@ -1,8 +1,5 @@
 package Robot;
 
-import java.lang.Object;
-
-import lejos.hardware.sensor.EV3ColorSensor;
 import Robot.Motor.CustomWheelsChassis;
 import Robot.Motor.Pliers;
 import Robot.Position.Position;
@@ -11,21 +8,10 @@ import Robot.Sensor.TouchSensor;
 import Robot.Sensor.UltrasonSensor;
 import lejos.hardware.Brick;
 import lejos.hardware.BrickFinder;
-import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.Motor;
-import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
-import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
-import lejos.hardware.Device;
-import lejos.hardware.sensor.BaseSensor;
-import lejos.hardware.sensor.AnalogSensor;
-import lejos.hardware.sensor.NXTLightSensor;
-import lejos.hardware.sensor.NXTColorSensor;
-import lejos.hardware.sensor.SensorMode;
-import lejos.robotics.SampleProvider;
-
-
+import lejos.utility.Delay;
 
 public class Robot {
 
@@ -43,8 +29,6 @@ public class Robot {
 	private static final int DISTANCE = 200;
 	private static final int GAUCHE = -1;
 	private static final int DROITE = 1;
-
-
 
 	private Brick brick;
 
@@ -293,7 +277,6 @@ public class Robot {
 	}
 
 	// Detecte si detection proche et évite l'obstacle par la droite
-
 	public void avoid () {
 		int detected = ultrasonSensor.getDetectedDistance();
 		long time = System.currentTimeMillis();
@@ -328,16 +311,11 @@ public class Robot {
 				position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis() - times);
 				return true;
 			}
-
 		}
 		position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis() - times);
 		return false;
-		
-
 		// position.setOrientation(targetAngle);
 	}
-
-
 
 	public void getPuck() {
 		// double distance = ultrasonSensor.getDetectedDistance();
@@ -346,5 +324,4 @@ public class Robot {
 		while(wheels.isMoving());
 		pliers.close();
 	}
-
 }
