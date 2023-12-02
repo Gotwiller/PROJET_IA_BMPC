@@ -8,11 +8,17 @@ import lejos.utility.Delay;
 public class Main {
 
 	// brick.getPower().getVoltage();
-
 	private static Robot robot;
 
-	private static class Menu extends Thread {
+	private static class Menu {
+		private static int nbChoixMain = 5;
 		static char[] color;
+
+		/**
+		 * Displays the main menu and wait for a user input.
+		 *
+		 * @return The selected action code.
+		 */
 		static int mainMenu(int choix) {
 			LCD.clear();
 			char c0=choix==0?'x':'o',c1=choix==1?'x':'o',c2=choix==2?'x':'o',c3=choix==3?'x':'o',c4=choix==4?'x':'o';
@@ -24,6 +30,11 @@ public class Main {
 			LCD.drawString(c4+" : Test", 0, 5);
 			return Button.waitForAnyPress();
 		}
+		/**
+		 * Displays the plier menu and wait for a user input.
+		 *
+		 * @return The selected action code.
+		 */
 		static int pliersMenu(int choix) {
 			LCD.clear();
 			char c0=choix==0?'x':'o',c1=choix==1?'x':'o';
@@ -32,6 +43,11 @@ public class Main {
 			LCD.drawString(c1+" : Ferme les pinces", 0, 2);
 			return Button.waitForAnyPress();
 		}
+		/**
+		 * Displays the select line menu and wait for a user input.
+		 *
+		 * @return The selected color on a char.
+		 */
 		static char selectStartingLing() {
 			int choix = 0;
 			int button;
@@ -51,6 +67,11 @@ public class Main {
 			if(choix == 0) return 'y';
 			return 'x';
 		}
+		/**
+		 * Displays the menu that allows you to move from one menu to another.
+		 *
+		 * @return The final action code. -2=end, -1=main menu, 0=open plier, 1=close plier, 2=start, 3=test
+		 */
 		static int menu(){
 			int choix = 0, button;
 			do {
@@ -59,9 +80,9 @@ public class Main {
 					return -2;
 				}
 				if(button == Button.ID_DOWN) 
-					choix = (choix+1)%nbChoix;
+					choix = (choix+1)%nbChoixMain;
 				else if (button == Button.ID_UP)
-					choix = choix==0?nbChoix-1:choix-1; 
+					choix = choix==0?nbChoixMain-1:choix-1; 
 				else if (button == Button.ID_ESCAPE)
 					choix = 0;        
 			} while(button != Button.ID_ENTER);
@@ -73,24 +94,20 @@ public class Main {
 					if(button == Button.ID_DOWN || button == Button.ID_UP) 
 						choix = (choix+1)%2;
 					else if(button == Button.ID_ESCAPE) {
-						if(choix==0) {
+						if(choix==0)
 							return -1;
-						} else choix=0;
+						else choix=0;
 					}
 				} while(button != Button.ID_ENTER);
 				if(button != Button.ID_ENTER) {
-					if(choix == 0) {
-						//new Robot().getPliers().close(true);
+					if(choix == 0)
 						return 0;
-					}
-					else {
-						//new Robot().getPliers().open(true);
+					else
 						return 1;
-					}
 				}
 			} // Do color calibration
 			else if(choix == 1) {
-				; // TODO new Robot().calibrateColors();
+				return -1; // TODO new Robot().calibrateColors();
 			} // Play Green Side
 			else if(choix == 2) {
 				char color = selectStartingLing();
@@ -113,32 +130,38 @@ public class Main {
 		}
 	}
 	private static class RobotAction extends Thread {
-		public static int action;
+		public static int action=-1;
+
+		/**
+         * Runs the robot action thread.
+         */
 		public void run() {
-			LCD.drawString("Action = "+action, 0, 2);
-			if(action == 0) {
-				robot.test();
-				//robot.getPliers().close(true);
-			}else if(action == 1) {
-				robot.test();
-				//robot.getPliers().open(true);
-			}else if(action == 2) {
-				robot.test();
-				//robot.start(Menu.color[0], Menu.color[1]);
-			}else if(action == 3) {
+			LCD.drawString("Action = " + action, 0, 2);
+			if (action == 0) {
+				robot.getPliers().open(true);
+			} else if (action == 1) {
+				robot.getPliers().close(true);
+			} else if (action == 2) {
+				robot.start(Menu.color[0], Menu.color[1]);
+			} else if (action == 3) {
 				robot.test();
 			}
 		}
 	}
+
 	private static class ForcedStop extends Thread {
 		static int button;
+
+		/**
+         * Runs the forced stop thread for stop the robot
+         */
 		public void run() {
-			button = -1;
-			while(true)	button = Button.waitForAnyPress();
+			while (!isInterrupted()) {
+				button = Button.waitForAnyPress();
+			}
 		}
 	}
 
-	private static int nbChoix = 5;
 	public static void main(String[] args) {
 		// TODO : All, good luck guys *u*
 		robot = new Robot();
@@ -147,16 +170,17 @@ public class Main {
 		do{
 			action = Menu.menu(); 
 			// Exit : Action = -2
-			if(action==-2) break;
+			if(action==-2) return;
 			// Main Menu : Action = -1
 		} while(action == -1); 
 
 		// A robot action
 		RobotAction.action = action;
 		RobotAction ra = new RobotAction();
-		ra.start();
 		ForcedStop fs= new ForcedStop();
+		ra.start();
 		fs.start();
+
 		do {
 			LCD.clear();
 			LCD.drawString("Is runing ? "+ra.isAlive(), 0, 1);
@@ -164,17 +188,13 @@ public class Main {
 			LCD.drawString("Escape int : "+Button.ID_ESCAPE, 0, 3);
 			Delay.msDelay(1000);
 		} while (ra.isAlive() && ForcedStop.button != Button.ID_ESCAPE);
-		if(ra.isAlive()) {
-			ra.interrupt();
-			ForcedStop.button=-1;
-			LCD.clear();
-			LCD.drawString("Escape", 0, 3);
-			Delay.msDelay(3000);
-		} else {
-			LCD.clear();
-			LCD.drawString("End", 0, 3);
-			Delay.msDelay(3000);
-		}
+		if(ra.isAlive()) ra.interrupt();
+		fs.interrupt();
+
+		LCD.clear();
+		if(ForcedStop.button == Button.ID_ESCAPE) LCD.drawString("Escape", 0, 3);
+		else LCD.drawString("End", 0, 3);
+		Delay.msDelay(3000);
 		LCD.clear();
 	}
 }
