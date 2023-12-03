@@ -1,5 +1,10 @@
 package Robot;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import Robot.Motor.CustomWheelsChassis;
 import Robot.Motor.Pliers;
 import Robot.Position.Position;
@@ -256,7 +261,7 @@ public class Robot {
 		boolean b = allerVersPuck(2000);
 		if(b)
 			getPuck();
-			
+
 		else
 			pliers.close();
 		wheels.rotateRight(45);
@@ -285,7 +290,7 @@ public class Robot {
 		position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 		pliers.close();
 	}
-	
+
 	// Detecte si detection proche et évite l'obstacle par la droite
 
 	public void avoid () {
@@ -305,8 +310,8 @@ public class Robot {
 			position.updateAngle(-90);
 		}
 	}
-	
-	
+
+
 	public void catchPuck() {
 		pliers.setClosed(true);
 		pliers.open();
@@ -314,11 +319,11 @@ public class Robot {
 		boolean b = allerVersPuck(600);
 		if(b)
 			getPuck();
-		 {
+		{
 			pliers.close();
-			}
 		}
-	
+	}
+
 	public boolean allerVersPuck(double distance) {
 		distance+=50;
 		//double dx = targetX - position.getX();
@@ -346,6 +351,168 @@ public class Robot {
 		//pliers.open();
 		wheels.moveBackward(1); 
 		while(wheels.isMoving());
+		pliers.close();
+	}
+
+	/**
+	 * Find the closest puck and give its distance by looking at it
+	 * 
+	 * Inconsistent values observed even after all tests performed and modifications made
+	 * 
+	 * @return distance The distance of the puck
+	 */
+	public int findPuck2() {
+		List<Integer> distances = new ArrayList<>();
+		wheels.rotate(360);
+		while(wheels.isMoving()) {
+			distances.add(ultrasonSensor.getDetectedDistance());
+			Delay.msDelay(4);
+		}
+		int[][] angles_distances = get2ClosestPuckAngleAndDistance(distances);
+		/*
+		try {
+			int size = distances.size();
+
+			BufferedWriter bw = new BufferedWriter(new FileWriter("info.txt",true));
+			bw.write(angles_distances[0][0]+" ; "+angles_distances[0][1]);
+			bw.newLine();
+			bw.write(angles_distances[1][0]+" ; "+angles_distances[1][1]);
+			bw.newLine();
+			for(int i = 0; i < size; i++) {
+				bw.write(i*360/size+"	"+distances.get(i));
+				bw.newLine();
+			}
+			bw.close();
+		}catch(Exception e) {}
+		 */
+		if(angles_distances[0][0]==-1) {
+			// TODO : move & re-do
+			return -1;
+		}
+		wheels.rotate(angles_distances[0][0]);
+		while(wheels.isMoving()) {}
+		if(Math.abs(ultrasonSensor.getDetectedDistanceBrut()-angles_distances[0][1]) < ACCEPTED_DISTANCE_ERROR){
+			return (int)angles_distances[0][1];
+		}
+		if(angles_distances[1][0]==-1) {
+			// TODO : move & re-do
+			return -1;
+		}
+		wheels.rotate(angles_distances[1][0]);
+		while(wheels.isMoving()) {}
+		if(Math.abs(ultrasonSensor.getDetectedDistanceBrut()-angles_distances[1][1]) < ACCEPTED_DISTANCE_ERROR){
+			return (int)angles_distances[1][1];
+		}
+		// TODO : move & re-do
+		return -1;
+	}
+
+	private static final int MIN_JUMP_VALUE = 150; // in millimeter 
+	private static final int MAX_PUCK_ANGLE = 16; // Angle en ° maximum de détéction par le robot
+	/**
+	 * Gives the angle of the 2 closest pucks and their distance from the distance table in parameter
+	 * 
+	 * @param distances A list of distance measure
+	 * @return tab A table of 2 angle and distance of closest puck. Angle of -1 if there is no info
+	 */
+	private static int MAX_NUMBER_OF_IDX_BTWN_2_JUMPS_FOR_PUCK;
+	private int[][] get2ClosestPuckAngleAndDistance(List<Integer> distance) {
+		int size = distance.size();
+		int dif;
+		MAX_NUMBER_OF_IDX_BTWN_2_JUMPS_FOR_PUCK = size*MAX_PUCK_ANGLE/360;
+		Map<Integer /* index */, Integer /* jump value */> jumps = new LinkedHashMap<>();
+		for(int i = 1; i < size; i++) {
+			dif = distance.get(i-1)-distance.get(i);
+			if(Math.abs(dif) > MIN_JUMP_VALUE) {
+				jumps.put(i, dif);	
+			}
+		}
+
+		int[][] clotestPuck = new int[][] {{-1,0},{-1,0}};
+
+		int oldIdx = 0; int oldJumpValue = 0;
+		for(Map.Entry<Integer, Integer> e : jumps.entrySet()) {
+			// Jump avant et Jump arière rapide ( rapide = a moins de MAX_NUMBER_OF_IDX_BTWN_2_JUMPS_FOR_PUCK idx)
+			if(oldJumpValue > 0 && e.getValue() < 0 && e.getKey()-oldIdx < MAX_NUMBER_OF_IDX_BTWN_2_JUMPS_FOR_PUCK) {
+				// idx du milieu du puck
+				int idx = (oldIdx+e.getKey())/2;
+				// distance du puck
+				int dis = distance.get(idx);
+				if(clotestPuck[0][0]==-1) {
+					clotestPuck[0][0] = idx;
+					clotestPuck[0][1] = dis;
+				} else {
+					if(clotestPuck[0][1] < dis) {
+						if(clotestPuck[1][0] == -1 || clotestPuck[1][1] > dis) {
+							clotestPuck[1][0] = idx;
+							clotestPuck[1][1] = dis;
+						}
+					} else {
+						if(clotestPuck[1][0] == -1 || clotestPuck[1][1] > clotestPuck[1][0]) {
+							clotestPuck[1][0] = clotestPuck[0][0];
+							clotestPuck[1][1] = clotestPuck[0][1];
+						}
+						clotestPuck[0][0] = idx;
+						clotestPuck[0][1] = dis;
+					}
+				}
+			}
+			oldIdx = e.getKey();
+			oldJumpValue = e.getValue();
+		}
+		/*
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter("info.txt"));
+			bw.write("\n\n\nJUMPS : \n");
+			for(Map.Entry<Integer, Integer> e : jumps.entrySet()) {
+				bw.write("key = "+e.getKey()+" ; val = "+e.getValue()+" ; distance = "+distance.get(e.getKey()));
+				bw.newLine();
+			}
+			bw.close();
+		}catch(Exception e) {throw new RuntimeException("PB dans l'écriture");}
+		 */
+		if(clotestPuck[0][0]!=-1)
+			clotestPuck[0][0] = 360*clotestPuck[0][0]/size;
+		if(clotestPuck[1][0]!=-1) 
+			clotestPuck[1][0] = 360*clotestPuck[1][0]/size;
+		return clotestPuck;
+	}
+
+	private void hopelessFindPuck() {
+		int angle, distance;
+		long time, newTime;
+		pliers.open();
+		first : do {
+			// rotates at random angles 
+			angle = 35+(int)(Math.random()*20); // 35 < angle < 55
+			wheels.rotateRight(angle);
+			while(wheels.isMoving());
+			position.updateAngle(angle);
+
+			time = System.currentTimeMillis();
+			wheels.moveForward(3500); // 3500 = the diagonal distance, (max distance)
+			while(wheels.isMoving()) {
+				// Update the position
+				newTime = System.currentTimeMillis();
+				if(newTime-time > 250) {
+					position.updateLinear(wheels.getLinearSpeed(), newTime-time);
+					time = newTime;
+				}
+
+				// Re-rotate if there is an obstacle
+				distance = ultrasonSensor.getDetectedDistance();
+				if(distance<20) {
+					wheels.stop();
+					position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis()-time);
+					continue first;
+				}
+				if(touchSensor.isPressed()) {
+					break first;
+				}
+			}
+		}while(!touchSensor.isPressed());
+		wheels.stop();
+		position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis()-time);
 		pliers.close();
 	}
 }
