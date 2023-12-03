@@ -254,14 +254,15 @@ public class Robot {
 		}
 	}*/
 
-	public void test() {
+	//attraper et emener dans les cages le premier palet 
+	
+	public void firstpuck() {
 		pliers.setClosed(true);
 		pliers.open();
 		position = new Position(300,1500,0);
 		boolean b = allerVersPuck(2000);
 		if(b)
 			getPuck();
-
 		else
 			pliers.close();
 		wheels.rotateRight(45);
@@ -311,19 +312,19 @@ public class Robot {
 		}
 	}
 
-
+	//attraper le palet
+	
 	public void catchPuck() {
 		pliers.setClosed(true);
 		pliers.open();
-		position = new Position(0, 0, 0); 
-		boolean b = allerVersPuck(600);
+		position = new Position(300,1500,0);
+		boolean b = allerVersPuck(2000);
 		if(b)
 			getPuck();
-		{
+		else
 			pliers.close();
-		}
 	}
-
+	
 	public boolean allerVersPuck(double distance) {
 		distance+=50;
 		//double dx = targetX - position.getX();
