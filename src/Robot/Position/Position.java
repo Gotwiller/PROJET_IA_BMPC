@@ -1,7 +1,5 @@
 package Robot.Position;
 
-import Robot.Robot;
-
 public class Position {
 
 	private static final int TABLE_LENGTH = 3000;
