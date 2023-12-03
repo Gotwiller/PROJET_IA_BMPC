@@ -259,24 +259,35 @@ public class Robot {
 			
 		else
 			pliers.close();
-		long time = System.currentTimeMillis();
 		wheels.rotateRight(45);
 		while (wheels.isMoving());
 		position.updateAngle(45);
+		long time = System.currentTimeMillis();
 		wheels.travel(300);
 		while (wheels.isMoving());
 		position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 		wheels.rotateLeft(45);
 		while (wheels.isMoving());
 		position.updateAngle(MOINS_ANGLE_45);
+		time = System.currentTimeMillis();
 		wheels.travel(2000);
+		position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 		while (wheels.isMoving() && colorSensor.isWhiteDetected()== false) { 
 			avoid();
+			time = System.currentTimeMillis();
 			wheels.travel(100);
+			position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 		}
+		pliers.open();
+		time = System.currentTimeMillis();
+		wheels.travel(-100);
+		while (wheels.isMoving());
+		position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+		pliers.close();
 	}
-
+	
 	// Detecte si detection proche et évite l'obstacle par la droite
+
 	public void avoid () {
 		int detected = ultrasonSensor.getDetectedDistance();
 		long time = System.currentTimeMillis();
