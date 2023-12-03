@@ -8,7 +8,7 @@ public class PuckPosition {
 		{900, 500},{1500, 500},{2100, 500}
 	};
 	private static boolean[] estEncoreLa = new boolean[] {true,true,true,true,true,true,true,true,true};
-	
+
 	/**
 	 * Get the closest puck position. 
 	 * 
@@ -16,7 +16,7 @@ public class PuckPosition {
 	 * @param y The y position of the robot
 	 * @return position The position of the closest puck [ x , y ] or null if no puck is available
 	 */
-	public int[] closestPuck(int x, int y) {
+	public static int[] getPuckPosition(int x, int y) {
 		if(!availableKnowPuck()) return null;
 		int[] distances = new int[puckPosition.length];
 		for(int i = 0; i < puckPosition.length; i++) {
@@ -32,7 +32,24 @@ public class PuckPosition {
 		}
 		return position;
 	}
-	private boolean availableKnowPuck() {
+	/**
+     * Marks a puck as no longer available.
+     *
+     * @param x The x position of the puck
+     * @param y The y position of the puck
+     */
+	public void estPlusLa(int x, int y) {
+		for(int i = 0; i < puckPosition.length; i++) 
+			if(puckPosition[i][0] == x && puckPosition[i][1] == y) {
+				estEncoreLa[i] = false;
+				break;
+			}
+	}
+	/**
+	 * Check if there is a available puck
+	 * @return
+	 */
+	private static boolean availableKnowPuck() {
 		for(boolean b : estEncoreLa) if(b) return true;
 		return false;
 	}
