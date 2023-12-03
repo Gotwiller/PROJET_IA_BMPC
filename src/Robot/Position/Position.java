@@ -18,7 +18,7 @@ public class Position {
 	private static final int CAPTER_DISTANCE = 140; 
 	
 	// Left = g (green) , right = b (blue)
-	private char home;
+	private char goal;
 	
 	private double x;
 	private double y;
@@ -32,7 +32,7 @@ public class Position {
      * @param startingColor The starting color of the robot ('r' for red, 'y' for yellow, 'b' for black).
      */
 	public Position(char side, char startingColor) {
-		home = side=='b'?'g':'b';
+		goal = side=='b'?'g':'b';
 		if(side == 'g') {
 			x = LEFT_WHITE_LINE;
 			direction = 0;
@@ -79,8 +79,8 @@ public class Position {
 	 * 
 	 * @return positive = left, negative = right
 	 */
-	public double calculateAngleToReturnHome() {
-		if(home == 'g') return 180-direction;
+	public double calculateAngleToGoal() {
+		if(goal == 'g') return 180-direction;
 		if(direction > 180) return 360-direction;
 		return -direction;
 	}
@@ -133,14 +133,14 @@ public class Position {
      * 
      * @return The home side ('g' for left, 'b' for right).
      */
-    public char getHome() { return home; }
+    public char getHome() { return goal; }
 
 	/**
 	 * Performs a rotation operation on the current direction by the specified angle.
 	 * 
 	 * @param angle The angle in ° 
 	 */
-	public void updateAngle(int angle) {
+	public void updateAngle(double angle) {
 		direction += angle;
 		if(direction < 0) direction += 360;
 		else direction %= 360;
