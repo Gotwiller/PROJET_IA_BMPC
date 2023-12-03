@@ -349,8 +349,7 @@ public class Robot {
 
 	public void getPuck() {
 		// double distance = ultrasonSensor.getDetectedDistance();
-		//pliers.open();
-		wheels.moveBackward(1); 
+		//pliers.open(); 
 		while(wheels.isMoving());
 		pliers.close();
 	}
