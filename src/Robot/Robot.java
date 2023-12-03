@@ -306,6 +306,19 @@ public class Robot {
 		}
 	}
 	
+	
+	public void catchPuck() {
+		pliers.setClosed(true);
+		pliers.open();
+		position = new Position(0, 0, 0); 
+		boolean b = allerVersPuck(600);
+		if(b)
+			getPuck();
+		 {
+			pliers.close();
+			}
+		}
+	
 	public boolean allerVersPuck(double distance) {
 		distance+=50;
 		//double dx = targetX - position.getX();
