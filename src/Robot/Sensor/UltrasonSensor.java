@@ -2,6 +2,7 @@ package Robot.Sensor;
 
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
+import lejos.utility.Delay;
 
 public class UltrasonSensor extends EV3UltrasonicSensor {
 
@@ -19,6 +20,16 @@ public class UltrasonSensor extends EV3UltrasonicSensor {
 		getDistanceMode().fetchSample(front, 0);
 		return (int)(front[0]*1000);
 	}
+	/**
+	 * Get the detected distance from the UltrasonSensor in meter.
+	 * 
+	 * @return a distance in meter
+	 */
+	public float getDetectedDistanceBrut() {
+		float[] front = new float[1];
+		getDistanceMode().fetchSample(front, 0);
+		return front[0];
+	}
 
 	/**
 	 * clarify if the detection is a puck , a wall/robot/angle or if it's a wrong detection
@@ -30,8 +41,7 @@ public class UltrasonSensor extends EV3UltrasonicSensor {
 	 */
 	public int clarifySuspectDetection(int expectedDistance) {
 	int detected = getDetectedDistance(), erreur = 50;
-	try {Thread.sleep(10);}
-	catch (Exception e) {}
+	Delay.msDelay(300);
 	int detected2 = getDetectedDistance();
 	if (expectedDistance >= detected2-erreur && expectedDistance <= detected2+erreur)
 		return 0;
