@@ -16,7 +16,7 @@ public class PuckPosition {
 	 * @param y The y position of the robot
 	 * @return position The position of the closest puck [ x , y ] or null if no puck is available
 	 */
-	public static int[] getPuckPosition(int x, int y) {
+	public static int[] getPuckPosition(double x, double y) {
 		if(!availableKnowPuck()) return null;
 		int[] distances = new int[puckPosition.length];
 		for(int i = 0; i < puckPosition.length; i++) {
@@ -38,12 +38,22 @@ public class PuckPosition {
      * @param x The x position of the puck
      * @param y The y position of the puck
      */
-	public void estPlusLa(int x, int y) {
+	public static void estPlusLa(int x, int y) {
 		for(int i = 0; i < puckPosition.length; i++) 
 			if(puckPosition[i][0] == x && puckPosition[i][1] == y) {
 				estEncoreLa[i] = false;
 				break;
 			}
+	}
+
+	/**
+     * Marks a puck as no longer available.
+     *
+     * @param x The x position of the puck
+     * @param y The y position of the puck
+     */
+	public static void estPlusLa(int[] position) {
+		estPlusLa(position[0],position[1]);
 	}
 	/**
 	 * Check if there is a available puck
