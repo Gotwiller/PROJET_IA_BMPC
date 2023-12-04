@@ -8,11 +8,13 @@ import java.util.Map;
 import Robot.Motor.CustomWheelsChassis;
 import Robot.Motor.Pliers;
 import Robot.Position.Position;
+import Robot.Position.PuckPosition;
 import Robot.Sensor.ColorSensor;
 import Robot.Sensor.TouchSensor;
 import Robot.Sensor.UltrasonSensor;
 import lejos.hardware.Brick;
 import lejos.hardware.BrickFinder;
+import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.Motor;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.chassis.WheeledChassis;
@@ -20,9 +22,11 @@ import lejos.utility.Delay;
 
 public class Robot {
 
+	public static final int TIME_BETWEEN_POSITION_UPDATES = 500; //in ms
+
 	public static final int WHEEL_DIAMETER= 56;
 	public static final float WHEEL_OFFSET_VALUE = 61.5f;
-	public static final int ACCEPTED_DISTANCE_ERROR = 50;	// en millimetre
+	public static final int ACCEPTED_DISTANCE_ERROR = 80;	// en millimetre
 	public static final int MIN_WALL_DISTANCE = 150;		// en millimetre
 
 	private static final int ANGLE_45 = 45;
@@ -60,36 +64,286 @@ public class Robot {
 		//Wheel rightWheel = WheeledChassis.modelWheel(Motor.C, WHEEL_DIAMETER).offset(WHEEL_OFFSET_VALUE);
 
 		wheels = new CustomWheelsChassis(WHEEL_DIAMETER, WheeledChassis.TYPE_DIFFERENTIAL);
+		wheels.setAngularSpeed(90);
 		pliers = new Pliers(Motor.A);
-
+		
 		colorSensor = new ColorSensor(SensorPort.S1);	   
 		touchSensor = new TouchSensor(SensorPort.S3);		
 		ultrasonSensor = new UltrasonSensor(SensorPort.S4); 
-		//ultrasonSensor.enable();
 	}
 
 	public void start(char side, char line) {
 		position = new Position(side, line);
-		boolean puckFound;
-		int distance = 2500;
-		do {
-			// Go forward while nothing happen = green part
-			puckFound = goFindPuck(distance);
-			if(!puckFound) {
-				distance = position.getExpectedDistance()-MIN_WALL_DISTANCE+50;
-				continue;
-			} else { // Suspect detection
-				// TODO puck found
-			}
-			/*// Useless ?
-				else { // Full travel
-				verifyPosition(); // Check if the position is correct and modify the position if necessary
-				rotateForFindPuck();
-				distance = position.getExpectedDistance()-MIN_WALL_DISTANCE+50;
-				continue;
-			 */
-		} while(true); // TODO : modify the condition : if we do all the map without find puck (go back home on the white line because it's fun)
+		firstpuck();
+
+		while(!Thread.currentThread().isInterrupted()) {
+			int distance = lookClosestPuckAndGetDistance();
+			if(distance < 0) break;
+
+			int realDistance = lookCenterOfPuck()+position.getCapterDistance();
+
+			if(!catchPuck(realDistance)) continue;
+
+			rotateToGoGoal();
+			goToGoal();
+			dropPuck();
+		}
+		while(!Thread.currentThread().isInterrupted()) {
+			hopelessFindPuck();
+			rotateToGoGoal();
+			goToGoal();
+			dropPuck();
+		}
 	}
+
+	private int lookCenterOfPuck() {
+		wheels.rotate(15);
+		while(wheels.isMoving());
+		position.rotate(15);
+		List<Integer> distances = new ArrayList<Integer>();
+		wheels.rotate(-30);
+		while(wheels.isMoving()) {
+			distances.add(ultrasonSensor.getDetectedDistance());
+			Delay.msDelay(4);
+		} 
+		position.rotate(-30);
+		if(distances.size() == 0) return ultrasonSensor.getDetectedDistance();
+		int minValueIdx = 0, minDistance = distances.get(minValueIdx);
+		for(int i = 1; i < distances.size(); i++) {
+			if(distances.get(i)<minDistance) {
+				minDistance = distances.get(i);
+				minValueIdx = i;
+			}
+		}
+
+		// Look the center of the same distance for a better middle aim
+		int a=minValueIdx,b=minValueIdx;
+		for(; a > 0 && distances.get(a) == minDistance; a--);
+		for(; b > distances.size() && distances.get(a) == minDistance; b++);
+		minValueIdx = (a+b)/2;
+
+		int angle = 30-30*minValueIdx/distances.size();
+		wheels.rotateLeft(angle);
+		while(wheels.isMoving());
+		position.updateAngle(angle);
+		System.out.println("Real Dis avant add : "+minDistance);
+		return minDistance;
+	}
+
+	// Test 
+
+	public void test() {
+		wheels.rotate(360*6);
+		while(wheels.isMoving());
+	}
+
+	// Find pucks
+
+	private int lookClosestPuckAndGetDistance() {
+		int[] puckPosition = PuckPosition.getPuckPosition(position.getX(),position.getY());
+		if(puckPosition==null) return -1;
+
+		PuckPosition.estPlusLa(puckPosition); // Il n'y sera plus en tout cas
+
+		int distance = (int)Math.sqrt(Math.pow(puckPosition[0]-position.getX(), 2)+Math.pow(puckPosition[1]-position.getY(), 2));
+		double angle = Math.toDegrees(Math.atan2(puckPosition[1] - position.getY(),puckPosition[0]- position.getX()));
+
+		wheels.rotate(angle-position.getOrientation());
+		while(wheels.isMoving());
+		position.updateAngle(angle-position.getOrientation());
+
+		LCD.clear();
+		LCD.drawString("PP : "+puckPosition[0]+","+puckPosition[1],0,0);
+		LCD.drawString("RP : "+(int)position.getX()+","+(int)position.getY(),0,1);
+		LCD.drawString("DI : "+distance,0,2);
+		LCD.drawString("AN : "+angle,0,3);
+		Delay.msDelay(1000);
+
+		System.out.println("==========");
+		System.out.println(position.getX()+","+position.getY()+" - "+position.getOrientation());
+		System.out.println("PP : "+puckPosition[0]+","+puckPosition[1]);
+		System.out.println("RP : "+(int)position.getX()+","+(int)position.getY());
+		System.out.println("DI : "+distance);
+		System.out.println("AN : "+angle);
+
+		return distance;
+	}
+	private void hopelessFindPuck() {
+		int angle, distance;
+		long time, newTime;
+		pliers.open();
+		first : do {
+			// rotates at random angles 
+			angle = 35+(int)(Math.random()*20); // 35 < angle < 55
+			wheels.rotateRight(angle);
+			while(wheels.isMoving());
+			position.updateAngle(-angle);
+
+			time = System.currentTimeMillis();
+			wheels.moveForward(3500); // 3500 = the diagonal distance, (max distance)
+			while(wheels.isMoving()) {
+				// Update the position
+				newTime = System.currentTimeMillis();
+				if(newTime-time > TIME_BETWEEN_POSITION_UPDATES) {
+					position.updateLinear(wheels.getLinearSpeed(), newTime-time);
+					time = newTime;
+				}
+
+				// Re-rotate if there is an obstacle
+				distance = ultrasonSensor.getDetectedDistance();
+				if(distance<20) {
+					wheels.stop();
+					position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis()-time);
+					continue first;
+				}
+				if(touchSensor.isPressed()) {
+					break first;
+				}
+			}
+			position.removeSurplusAcceleration(wheels.getLinearAcceleration(), wheels.getLinearSpeed());
+		}while(!touchSensor.isPressed());
+		wheels.stop();
+		position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis()-time);
+		pliers.close();
+	}
+
+	// Catch the puck
+
+	public boolean catchPuck(double distance) {
+		pliers.open();
+		if(allerVersPuck(distance)) {
+			pliers.close();
+			return true;
+		} else {
+			pliers.close();
+			return false;
+		}
+	}
+	public boolean allerVersPuck(double distance) {
+		distance+=50; // 5cm for safety
+		long time = System.currentTimeMillis();
+		wheels.moveForward(distance);
+		while(wheels.isMoving()) {
+			if(touchSensor.isPressed()) {
+				wheels.stop();
+				position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis() - time);
+				return true;
+			}
+		}
+		position.move(distance);
+		return false;
+	}
+
+	// Go to the goal
+
+	private void rotateToGoGoal() {
+		double angle = position.calculateAngleToGoal();
+		wheels.rotate(angle);
+		while(wheels.isMoving());
+		position.updateAngle(angle);
+	}
+	private void goToGoal() {
+		long time = System.currentTimeMillis(),newTime;
+		wheels.travel(3000);
+		while (wheels.isMoving() && !colorSensor.isWhiteDetected()) {
+			// regularly updates the position
+			newTime = System.currentTimeMillis();
+			if(newTime-time>TIME_BETWEEN_POSITION_UPDATES) {
+				position.updateLinear(wheels.getLinearSpeed(), newTime-time);
+				time = newTime;
+			}
+
+			// Dodge if there is an obstacle
+			if (ultrasonSensor.getDetectedDistance() < 200) {
+				wheels.stop();
+				position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				position.removeSurplusAcceleration(wheels.getLinearAcceleration(), wheels.getLinearSpeed());
+				if(!avoid()) break;
+				wheels.travel(3000);
+				time = System.currentTimeMillis();
+			}
+		}
+		wheels.stop();
+		position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+		position.majWhiteLine();
+		//position.removeSurplusAcceleration(wheels.getLinearAcceleration(), wheels.getLinearSpeed());
+	}
+	public boolean avoid () {
+		return avoidRight() || avoidLeft();
+	}
+	private boolean avoidRight() {
+		wheels.rotateRight(90);
+		while (wheels.isMoving());
+		position.updateAngle(-90);
+		if(ultrasonSensor.getDetectedDistance() < 250) {
+			wheels.rotateLeft(90);
+			while (wheels.isMoving());
+			position.updateAngle(90);
+			return false;
+		}
+		wheels.travel(300);
+		while (wheels.isMoving());
+		position.move(300);
+		wheels.rotateLeft(90);
+		while (wheels.isMoving());
+		position.updateAngle(90);
+		return true;
+	}
+	private boolean avoidLeft() {
+		wheels.rotateLeft(90);
+		while (wheels.isMoving());
+		position.updateAngle(90);
+		if(ultrasonSensor.getDetectedDistance() < 250) {
+			wheels.rotateRight(90);
+			while (wheels.isMoving());
+			position.updateAngle(-90);
+			return false;
+		}
+		wheels.travel(300);
+		while (wheels.isMoving());
+		position.move(300);
+		wheels.rotateRight(90);
+		while (wheels.isMoving());
+		position.updateAngle(-90);
+		return true;
+	}
+
+	// Drop the puck
+
+	private void dropPuck() {
+		pliers.open();
+		wheels.travel(-100);
+		while (wheels.isMoving());
+		pliers.close();
+		wheels.rotate(180);
+		while(wheels.isMoving());
+		position.updateAngle(180);
+	}
+
+	// First puck
+
+	public void firstpuck() {
+		// Catch the puck in front of us
+		catchPuck(600);
+
+		// moves towards the center for dodge puck
+		wheels.rotateRight(45);
+		while (wheels.isMoving());
+		position.updateAngle(-45);
+		wheels.travel(300);
+		while (wheels.isMoving());
+		position.move(300);
+		wheels.rotateLeft(45);
+		while (wheels.isMoving());
+		position.updateAngle(45);
+
+		// travel to the goal and dodge obstacles
+		goToGoal();
+		// Drop the puck
+		dropPuck();
+	}
+
+	// Dead Code
 
 	/**
 	 * Go forward and return the next action.
@@ -97,7 +351,7 @@ public class Robot {
 	 * @param distance Max distance to do
 	 * @return if a puck is found
 	 */
-	private boolean goFindPuck(int distance) {
+	private boolean findPuck1(int distance) {
 		long newTime, time = System.currentTimeMillis();
 		float[] front = new float[1];
 		int detectedDistance, expectedDistance, numberOfSuspectDetection = 0;
@@ -157,203 +411,6 @@ public class Robot {
 		int expectedDistance = ultrasonSensor.getDetectedDistance();
 		return ultrasonSensor.clarifySuspectDetection(expectedDistance);
 	}
-
-	/**
-	 * Rotate by a certain angle and update the position.
-	 * 
-	 * @param angle
-	 */
-	private void rotate(int angle) {
-		// TODO
-	}
-	/**
-	 * Do the best rotation for find a puck.
-	 */
-	private void rotateForFindPuck() {
-		// TODO
-	}
-	/**
-	 * Do the best rotation to back home.
-	 * 
-	 * @param dodge If it's for dodge a object in front of the robot.
-	 */	
-
-	private void rotateForBackHome() {
-		long newTime, time = System.currentTimeMillis();
-		int angleRetour = (int)position.calculateAngleToReturnHome();
-		int cote; // -1 si plus proche du mur gauche / 1 si plus proche du mur droit
-		rotate(angleRetour); position.updateAngle(angleRetour);// update l'angle
-		while (wheels.isMoving());
-		wheels.travel(DISTANCE_ENTRE_2CAMPS);  
-		while(colorSensor.isWhiteDetected()==false) {
-			// MAJ de la position toute les 100ms
-			newTime = System.currentTimeMillis();
-			if(newTime-time > TIMER_UPDATE) {
-				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
-				time = newTime;
-			}
-
-			while(wheels.isMoving()) {
-				// Update the position if necessary (every 2 seconds)
-				newTime = System.currentTimeMillis();
-				if(newTime-time > TIMER_UPDATE) {
-					position.updateLinear(wheels.getLinearSpeed(),newTime-time);
-				}
-				time = newTime;
-			}
-
-			//Detecte rien
-			if(suspectDetection()==0) continue;
-
-			// Detecte un palais
-			else if (suspectDetection()==2){ 	
-				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-				// Coté par lequel eviter
-				if (position.getX()<MILLIEU_TERRAIN && (position.getHome()=='g')||position.getX()>MILLIEU_TERRAIN && (position.getHome()=='b')) 
-					cote = GAUCHE; // Eviter par la droite
-				else cote= DROITE; // Eviter par la gauche
-				rotate(MOINS_ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(MOINS_ANGLE_45*cote);
-				// Cas ou le robot tourne de 45degres ET palais dans le champ
-				while (suspectDetection()==2) { 
-					rotate(ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(ANGLE_45*cote);
-					wheels.travel(100); while(wheels.isMoving());
-					wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-					rotate(MOINS_ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(MOINS_ANGLE_45*cote);
-				}
-				wheels.travel(DISTANCE); while (wheels.isMoving());
-				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-				rotate(ANGLE_45*cote);while (wheels.isMoving()); position.updateAngle(ANGLE_45*cote);
-			}
-		}
-		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-	}
-
-	//public void test() {
-	/*position = new Position('b','y');
-		wheels.travel(1500); 
-		while (wheels.isMoving());
-		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis());
-		wheels.rotate(30);
-		while (wheels.isMoving());
-		position.updateAngle(30);
-		rotateForBackHome();*/
-	//LCD.drawString(colorSensor.toString(),0 ,0 ); // Utiliser instance car Class est static
-	//return Button.waitForAnyPress();
-
-	/*for(int i =0; i<10;i++) {
-			if(suspectDetection()==0) {
-				wheels.travel(50);
-				while (wheels.isMoving());
-			}
-
-			else if(suspectDetection()==2) {
-				wheels.rotate(50);
-				while (wheels.isMoving());
-				wheels.stop();
-			}
-		}
-	}*/
-
-	//attraper et emener dans les cages le premier palet 
-	
-	public void firstpuck() {
-		pliers.setClosed(true);
-		pliers.open();
-		position = new Position(300,1500,0);
-		boolean b = allerVersPuck(2000);
-		if(b)
-			getPuck();
-		else
-			pliers.close();
-		wheels.rotateRight(45);
-		while (wheels.isMoving());
-		position.updateAngle(45);
-		long time = System.currentTimeMillis();
-		wheels.travel(300);
-		while (wheels.isMoving());
-		position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-		wheels.rotateLeft(45);
-		while (wheels.isMoving());
-		position.updateAngle(MOINS_ANGLE_45);
-		time = System.currentTimeMillis();
-		wheels.travel(2000);
-		position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-		while (wheels.isMoving() && colorSensor.isWhiteDetected()== false) { 
-			avoid();
-			time = System.currentTimeMillis();
-			wheels.travel(100);
-			position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-		}
-		pliers.open();
-		time = System.currentTimeMillis();
-		wheels.travel(-100);
-		while (wheels.isMoving());
-		position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-		pliers.close();
-	}
-
-	// Detecte si detection proche et évite l'obstacle par la droite
-
-	public void avoid () {
-		int detected = ultrasonSensor.getDetectedDistance();
-		long time = System.currentTimeMillis();
-		Delay.msDelay(20);
-		if (ultrasonSensor.getDetectedDistance()<= 200) {
-			wheels.stop();
-			wheels.rotateRight(85);
-			while (wheels.isMoving());
-			position.updateAngle(85);
-			wheels.travel(300);
-			while (wheels.isMoving());
-			position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
-			wheels.rotateLeft(90);
-			while (wheels.isMoving());
-			position.updateAngle(-90);
-		}
-	}
-
-	//attraper le palet
-	
-	public void catchPuck() {
-		pliers.setClosed(true);
-		pliers.open();
-		position = new Position(300,1500,0);
-		boolean b = allerVersPuck(2000);
-		if(b)
-			getPuck();
-		else
-			pliers.close();
-	}
-	
-	public boolean allerVersPuck(double distance) {
-		distance+=50;
-		//double dx = targetX - position.getX();
-		//double dy = targetY - position.getY();
-		// double targetAngle = Math.toDegrees(Math.atan2(dy, dx));
-		//double distance = Math.sqrt(dx * dx + dy * dy);
-		// double angleDiff = targetAngle - position.getOrientation();
-		// wheels.rotate(angleDiff);
-		long times = System.currentTimeMillis();
-		wheels.moveForward(distance);
-		while(wheels.isMoving()) {
-			if(touchSensor.isPressed()) {
-				wheels.stop();
-				position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis() - times);
-				return true;
-			}
-		}
-		position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis() - times);
-		return false;
-		// position.setOrientation(targetAngle);
-	}
-
-	public void getPuck() {
-		// double distance = ultrasonSensor.getDetectedDistance();
-		//pliers.open(); 
-		while(wheels.isMoving());
-		pliers.close();
-	}
-
 	/**
 	 * Find the closest puck and give its distance by looking at it
 	 * 
@@ -406,7 +463,6 @@ public class Robot {
 		// TODO : move & re-do
 		return -1;
 	}
-
 	private static final int MIN_JUMP_VALUE = 150; // in millimeter 
 	private static final int MAX_PUCK_ANGLE = 16; // Angle en ° maximum de détéction par le robot
 	/**
@@ -478,41 +534,59 @@ public class Robot {
 		return clotestPuck;
 	}
 
-	private void hopelessFindPuck() {
-		int angle, distance;
-		long time, newTime;
-		pliers.open();
-		first : do {
-			// rotates at random angles 
-			angle = 35+(int)(Math.random()*20); // 35 < angle < 55
-			wheels.rotateRight(angle);
-			while(wheels.isMoving());
-			position.updateAngle(angle);
-
-			time = System.currentTimeMillis();
-			wheels.moveForward(3500); // 3500 = the diagonal distance, (max distance)
-			while(wheels.isMoving()) {
-				// Update the position
-				newTime = System.currentTimeMillis();
-				if(newTime-time > 250) {
-					position.updateLinear(wheels.getLinearSpeed(), newTime-time);
-					time = newTime;
-				}
-
-				// Re-rotate if there is an obstacle
-				distance = ultrasonSensor.getDetectedDistance();
-				if(distance<20) {
-					wheels.stop();
-					position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis()-time);
-					continue first;
-				}
-				if(touchSensor.isPressed()) {
-					break first;
-				}
+	/**
+	 * Do the best rotation to back home.
+	 * 
+	 * @param dodge If it's for dodge a object in front of the robot.
+	 */	
+	private void rotateForBackHome() {
+		long newTime, time = System.currentTimeMillis();
+		int angleRetour = (int)position.calculateAngleToGoal();
+		int cote; // -1 si plus proche du mur gauche / 1 si plus proche du mur droit
+		wheels.rotate(angleRetour); 
+		position.updateAngle(angleRetour);// update l'angle
+		while (wheels.isMoving());
+		wheels.travel(DISTANCE_ENTRE_2CAMPS);  
+		while(colorSensor.isWhiteDetected()==false) {
+			// MAJ de la position toute les 100ms
+			newTime = System.currentTimeMillis();
+			if(newTime-time > TIMER_UPDATE) {
+				position.updateLinear(wheels.getLinearSpeed(),newTime-time);
+				time = newTime;
 			}
-		}while(!touchSensor.isPressed());
-		wheels.stop();
-		position.updateLinear(wheels.getLinearSpeed(), System.currentTimeMillis()-time);
-		pliers.close();
+
+			while(wheels.isMoving()) {
+				// Update the position if necessary (every 2 seconds)
+				newTime = System.currentTimeMillis();
+				if(newTime-time > TIMER_UPDATE) {
+					position.updateLinear(wheels.getLinearSpeed(),newTime-time);
+				}
+				time = newTime;
+			}
+
+			//Detecte rien
+			if(suspectDetection()==0) continue;
+
+			// Detecte un palais
+			else if (suspectDetection()==2){ 	
+				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				// Coté par lequel eviter
+				if (position.getX()<MILLIEU_TERRAIN && (position.getGoal()=='g')||position.getX()>MILLIEU_TERRAIN && (position.getGoal()=='b')) 
+					cote = GAUCHE; // Eviter par la droite
+				else cote= DROITE; // Eviter par la gauche
+				wheels.rotate(MOINS_ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(MOINS_ANGLE_45*cote);
+				// Cas ou le robot tourne de 45degres ET palais dans le champ
+				while (suspectDetection()==2) { 
+					wheels.rotate(ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(ANGLE_45*cote);
+					wheels.travel(100); while(wheels.isMoving());
+					wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+					wheels.rotate(MOINS_ANGLE_45*cote); while(wheels.isMoving()); position.updateAngle(MOINS_ANGLE_45*cote);
+				}
+				wheels.travel(DISTANCE); while (wheels.isMoving());
+				wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
+				wheels.rotate(ANGLE_45*cote);while (wheels.isMoving()); position.updateAngle(ANGLE_45*cote);
+			}
+		}
+		wheels.stop(); position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 	}
 }
