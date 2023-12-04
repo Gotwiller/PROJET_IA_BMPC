@@ -57,14 +57,15 @@ public class Main {
 				LCD.drawString("Selectionner un choix :", 0, 0);
 				LCD.drawString(c0+" : Lignes Rouge", 0, 1);
 				LCD.drawString(c1+" : Lignes Noir", 0, 2);
-				LCD.drawString(c2+" : Lignes Jaune", 0, 2);
+				LCD.drawString(c2+" : Lignes Jaune", 0, 3);
 				button = Button.waitForAnyPress();
-				if(button == Button.ID_UP) choix = (choix+1)%3;
-				if(button == Button.ID_DOWN) choix = (choix+2)%3;
-			} while(button != Button.ID_ENTER && button != Button.ID_ESCAPE);
+				if(button == Button.ID_UP) choix = (choix+2)%3;
+				if(button == Button.ID_DOWN) choix = (choix+1)%3;
+				if(button == Button.ID_ESCAPE) return 'x';
+			} while(button != Button.ID_ENTER);
 			if(choix == 0) return 'r';
-			if(choix == 0) return 'n';
-			if(choix == 0) return 'y';
+			if(choix == 1) return 'n';
+			if(choix == 2) return 'y';
 			return 'x';
 		}
 		/**
@@ -99,12 +100,10 @@ public class Main {
 						else choix=0;
 					}
 				} while(button != Button.ID_ENTER);
-				if(button != Button.ID_ENTER) {
-					if(choix == 0)
-						return 0;
-					else
-						return 1;
-				}
+				if(choix == 0)
+					return 0;
+				else
+					return 1;
 			} // Do color calibration
 			else if(choix == 1) {
 				return -1; // TODO new Robot().calibrateColors();
@@ -133,8 +132,8 @@ public class Main {
 		public static int action=-1;
 
 		/**
-         * Runs the robot action thread.
-         */
+		 * Runs the robot action thread.
+		 */
 		public void run() {
 			LCD.drawString("Action = " + action, 0, 2);
 			if (action == 0) {
@@ -153,8 +152,8 @@ public class Main {
 		static int button;
 
 		/**
-         * Runs the forced stop thread for stop the robot
-         */
+		 * Runs the forced stop thread for stop the robot
+		 */
 		public void run() {
 			while (!isInterrupted()) {
 				button = Button.waitForAnyPress();
@@ -181,11 +180,10 @@ public class Main {
 		ra.start();
 		fs.start();
 
+		LCD.clear();
+		LCD.drawString("Running ...", 0, 3);
+
 		do {
-			LCD.clear();
-			LCD.drawString("Is runing ? "+ra.isAlive(), 0, 1);
-			LCD.drawString("Last Press : "+ ForcedStop.button, 0, 2);
-			LCD.drawString("Escape int : "+Button.ID_ESCAPE, 0, 3);
 			Delay.msDelay(1000);
 		} while (ra.isAlive() && ForcedStop.button != Button.ID_ESCAPE);
 		if(ra.isAlive()) ra.interrupt();
