@@ -27,7 +27,8 @@ public class CustomWheelsChassis extends WheeledChassis {
      * @param degrees The angle to rotate the robot.
      */
     public void rotate(double degrees) {
-    	super.rotate(degrees);
+    	if(degrees>0) rotateLeft(degrees);
+    	else rotateRight(-degrees);
     }
     /**
      * Rotates the robot to the left by the specified angle in degrees.
