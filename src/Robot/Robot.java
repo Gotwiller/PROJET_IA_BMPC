@@ -14,7 +14,6 @@ import Robot.Sensor.TouchSensor;
 import Robot.Sensor.UltrasonSensor;
 import lejos.hardware.Brick;
 import lejos.hardware.BrickFinder;
-import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.Motor;
 import lejos.hardware.port.SensorPort;
 import lejos.robotics.chassis.WheeledChassis;
@@ -64,9 +63,10 @@ public class Robot {
 		//Wheel rightWheel = WheeledChassis.modelWheel(Motor.C, WHEEL_DIAMETER).offset(WHEEL_OFFSET_VALUE);
 
 		wheels = new CustomWheelsChassis(WHEEL_DIAMETER, WheeledChassis.TYPE_DIFFERENTIAL);
-		wheels.setAngularSpeed(90);
+		wheels.setAngularSpeed(120);
+		wheels.setLinearSpeed(250);
 		pliers = new Pliers(Motor.A);
-		
+
 		colorSensor = new ColorSensor(SensorPort.S1);	   
 		touchSensor = new TouchSensor(SensorPort.S3);		
 		ultrasonSensor = new UltrasonSensor(SensorPort.S4); 
@@ -104,7 +104,7 @@ public class Robot {
 		wheels.rotate(-30);
 		while(wheels.isMoving()) {
 			distances.add(ultrasonSensor.getDetectedDistance());
-			Delay.msDelay(4);
+			Delay.msDelay(3);
 		} 
 		position.rotate(-30);
 		if(distances.size() == 0) return ultrasonSensor.getDetectedDistance();
@@ -119,7 +119,7 @@ public class Robot {
 		// Look the center of the same distance for a better middle aim
 		int a=minValueIdx,b=minValueIdx;
 		for(; a > 0 && distances.get(a) == minDistance; a--);
-		for(; b > distances.size() && distances.get(a) == minDistance; b++);
+		for(; b < distances.size() && distances.get(b) == minDistance; b++);
 		minValueIdx = (a+b)/2;
 
 		int angle = 30-30*minValueIdx/distances.size();
@@ -133,8 +133,9 @@ public class Robot {
 	// Test 
 
 	public void test() {
-		wheels.rotate(360*6);
-		while(wheels.isMoving());
+		wheels.travel(2000);
+		while(wheels.isMoving() && !colorSensor.isWhiteDetected());
+		wheels.stop();
 	}
 
 	// Find pucks
@@ -151,21 +152,7 @@ public class Robot {
 		wheels.rotate(angle-position.getOrientation());
 		while(wheels.isMoving());
 		position.updateAngle(angle-position.getOrientation());
-
-		LCD.clear();
-		LCD.drawString("PP : "+puckPosition[0]+","+puckPosition[1],0,0);
-		LCD.drawString("RP : "+(int)position.getX()+","+(int)position.getY(),0,1);
-		LCD.drawString("DI : "+distance,0,2);
-		LCD.drawString("AN : "+angle,0,3);
-		Delay.msDelay(1000);
-
-		System.out.println("==========");
-		System.out.println(position.getX()+","+position.getY()+" - "+position.getOrientation());
-		System.out.println("PP : "+puckPosition[0]+","+puckPosition[1]);
-		System.out.println("RP : "+(int)position.getX()+","+(int)position.getY());
-		System.out.println("DI : "+distance);
-		System.out.println("AN : "+angle);
-
+		Delay.msDelay(500);
 		return distance;
 	}
 	private void hopelessFindPuck() {
@@ -220,7 +207,7 @@ public class Robot {
 		}
 	}
 	public boolean allerVersPuck(double distance) {
-		distance+=50; // 5cm for safety
+		distance+=70; // 5cm for safety
 		long time = System.currentTimeMillis();
 		wheels.moveForward(distance);
 		while(wheels.isMoving()) {

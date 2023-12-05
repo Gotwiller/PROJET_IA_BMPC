@@ -9,6 +9,7 @@ public class Pliers {
 	
 	public Pliers(NXTRegulatedMotor motor) {
 		this.motor = motor;
+		this.motor.setSpeed(motor.getSpeed()*2);
 		closed = true;
 	}
 
@@ -27,6 +28,17 @@ public class Pliers {
 		if (closed || force) {
 			motor.rotate(360*3);
 			while(motor.isMoving()) {}
+			closed = false;
+		}
+	}
+	/**
+	 * Open the pliers. You can force them to open.
+	 * 
+	 * @param force Forced opening
+	 */
+	public void openDesyncr() {
+		if (closed) {
+			motor.rotate(360*3);
 			closed = false;
 		}
 	}

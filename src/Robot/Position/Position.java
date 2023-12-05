@@ -256,7 +256,6 @@ public class Position {
 		return (int)(o/Math.cos(teta_0))-CAPTER_DISTANCE;
 	}
 	public void majWhiteLine() {
-		x = goal=='g'?(LEFT_WHITE_LINE+100):(RIGHT_WHITE_LINE-100);
-		// TODO passer à 80 ou à 120 
+		x = goal=='g'?(LEFT_WHITE_LINE+200):(RIGHT_WHITE_LINE-200);
 	}
 }
