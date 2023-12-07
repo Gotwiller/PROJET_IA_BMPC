@@ -16,28 +16,12 @@ import lejos.hardware.Brick;
 import lejos.hardware.BrickFinder;
 import lejos.hardware.motor.Motor;
 import lejos.hardware.port.SensorPort;
-import lejos.robotics.chassis.WheeledChassis;
 import lejos.utility.Delay;
 
 public class Robot {
 
-	public static final int TIME_BETWEEN_POSITION_UPDATES = 500; //in ms
-
-	public static final int WHEEL_DIAMETER= 56;
-	public static final float WHEEL_OFFSET_VALUE = 61.5f;
-	public static final int ACCEPTED_DISTANCE_ERROR = 80;	// en millimetre
-	public static final int MIN_WALL_DISTANCE = 150;		// en millimetre
-
-	private static final int ANGLE_45 = 45;
-	private static final int ANGLE_180 = 180;
-	private static final int MOINS_ANGLE_45 = -45;
-	private static final int MILLIEU_TERRAIN = 1000;
-	private static final int TIMER_UPDATE = 100;
-	private static final int DISTANCE_ENTRE_2CAMPS = 2500;
-	private static final int DISTANCE = 200;
-	private static final int GAUCHE = -1;
-	private static final int DROITE = 1;
-
+	private static final int TIME_BETWEEN_POSITION_UPDATES = 500; //in ms
+	private static final int MIN_WALL_DISTANCE = 200;		// en millimetre
 	private Brick brick;
 
 	private Position position;
@@ -62,7 +46,7 @@ public class Robot {
 		//Wheel leftWheel = WheeledChassis.modelWheel(Motor.D, WHEEL_DIAMETER).offset(-WHEEL_OFFSET_VALUE);
 		//Wheel rightWheel = WheeledChassis.modelWheel(Motor.C, WHEEL_DIAMETER).offset(WHEEL_OFFSET_VALUE);
 
-		wheels = new CustomWheelsChassis(WHEEL_DIAMETER, WheeledChassis.TYPE_DIFFERENTIAL);
+		wheels = new CustomWheelsChassis();
 		wheels.setAngularSpeed(120);
 		wheels.setLinearSpeed(250);
 		pliers = new Pliers(Motor.A);
@@ -241,7 +225,7 @@ public class Robot {
 			}
 
 			// Dodge if there is an obstacle
-			if (ultrasonSensor.getDetectedDistance() < 200) {
+			if (ultrasonSensor.getDetectedDistance() < MIN_WALL_DISTANCE) {
 				wheels.stop();
 				position.updateLinear(wheels.getLinearSpeed(),System.currentTimeMillis()-time);
 				position.removeSurplusAcceleration(wheels.getLinearAcceleration(), wheels.getLinearSpeed());
@@ -262,7 +246,7 @@ public class Robot {
 		wheels.rotateRight(90);
 		while (wheels.isMoving());
 		position.updateAngle(-90);
-		if(ultrasonSensor.getDetectedDistance() < 250) {
+		if(ultrasonSensor.getDetectedDistance() < MIN_WALL_DISTANCE) {
 			wheels.rotateLeft(90);
 			while (wheels.isMoving());
 			position.updateAngle(90);
@@ -280,7 +264,7 @@ public class Robot {
 		wheels.rotateLeft(90);
 		while (wheels.isMoving());
 		position.updateAngle(90);
-		if(ultrasonSensor.getDetectedDistance() < 250) {
+		if(ultrasonSensor.getDetectedDistance() < MIN_WALL_DISTANCE) {
 			wheels.rotateRight(90);
 			while (wheels.isMoving());
 			position.updateAngle(-90);
@@ -332,6 +316,7 @@ public class Robot {
 
 	// Dead Code
 
+	public static final int ACCEPTED_DISTANCE_ERROR = 80;	// en millimetre
 	/**
 	 * Go forward and return the next action.
 	 * 
@@ -521,6 +506,15 @@ public class Robot {
 		return clotestPuck;
 	}
 
+	private static final int ANGLE_45 = 45;
+	private static final int ANGLE_180 = 180;
+	private static final int MOINS_ANGLE_45 = -45;
+	private static final int MILLIEU_TERRAIN = 1000;
+	private static final int TIMER_UPDATE = 100;
+	private static final int DISTANCE_ENTRE_2CAMPS = 2500;
+	private static final int DISTANCE = 200;
+	private static final int GAUCHE = -1;
+	private static final int DROITE = 1;
 	/**
 	 * Do the best rotation to back home.
 	 * 

@@ -7,7 +7,6 @@ import lejos.utility.Delay;
 
 public class Main {
 
-	// brick.getPower().getVoltage();
 	private static Robot robot;
 
 	private static class Menu {
@@ -75,6 +74,7 @@ public class Main {
 		 */
 		static int menu(){
 			int choix = 0, button;
+			// General Menu
 			do {
 				button = mainMenu(choix);
 				if(choix==0 && button == Button.ID_ESCAPE) {
@@ -147,7 +147,6 @@ public class Main {
 			}
 		}
 	}
-
 	private static class ForcedStop extends Thread {
 		static int button;
 

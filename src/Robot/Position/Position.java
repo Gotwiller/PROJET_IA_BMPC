@@ -3,9 +3,6 @@ package Robot.Position;
 public class Position {
 
 	private static final int TABLE_LENGTH = 3000;
-	public int getTableLength() {
-		return TABLE_LENGTH;
-	}
 	private static final int TABLE_WIDTH = 2000;
 
 	private static final int YELLOW_LINE = 500;
@@ -18,6 +15,7 @@ public class Position {
 	private static final int BLUE_LINE = 2100;
 	private static final int RIGHT_WHITE_LINE = 2700;
 
+	// Distance between the center of the robot and the UltrasonSensor
 	private static final int CAPTER_DISTANCE = 140; 
 	public int getCapterDistance() {
 		return CAPTER_DISTANCE;
@@ -156,10 +154,11 @@ public class Position {
 	public void updateAngle(double angle) {
 		orientation += angle;
 		normalizeOrientation();
-		System.out.println("("+(int)x+","+(int)y+") "+orientation+"°");
 	}
 	/**
 	 * Updates the position. Works only for straight line travel. The robot must not do rotation. 
+	 * 
+	 * Not use in the program
 	 * 
 	 * @param accelerationSpeed In millimeters per seconds pow 2
 	 * @param linearSpeed In millimeters per seconds
@@ -176,8 +175,13 @@ public class Position {
 
 		x += distance*Math.cos(theta);
 		y += distance*Math.sin(theta);
-		System.out.println("FT : ("+(int)x+","+(int)y+") "+orientation+"° "+(int)(distance*Math.cos(theta))+";"+(int)(distance*Math.sin(theta))+" ; "+distance);
 	}
+	/**
+	 * Remove a surplus in the position due to the acceleration of the robot
+	 * 
+	 * @param accelerationSpeed
+	 * @param linearSpeed
+	 */
 	public void removeSurplusAcceleration(double accelerationSpeed, double linearSpeed) {
 		double time = linearSpeed/accelerationSpeed;
 		double distance = 0.5 * linearSpeed * Math.pow(time, 2);
@@ -185,7 +189,6 @@ public class Position {
 
 		x -= distance*Math.cos(theta);
 		y -= distance*Math.sin(theta);
-		System.out.println("RS : ("+(int)x+","+(int)y+") "+orientation+"° "+(int)(distance*Math.cos(theta))+";"+(int)(distance*Math.sin(theta))+" ; "+distance);
 	}
 
 	/**
@@ -200,7 +203,6 @@ public class Position {
 
 		x += distance*Math.cos(theta);
 		y += distance*Math.sin(theta);
-		System.out.println("PF : ("+(int)x+","+(int)y+") "+orientation+"° "+(int)(distance*Math.cos(theta))+";"+(int)(distance*Math.sin(theta)));
 	}
 
 	/**
@@ -213,10 +215,8 @@ public class Position {
 		double radianOrientation = Math.toRadians(orientation);
 		x += distance * Math.cos(radianOrientation);
 		y += distance * Math.sin(radianOrientation);
-		System.out.println("MO : ("+(int)x+","+(int)y+") "+orientation+"° "+(int)(distance*Math.cos(radianOrientation))+";"+(int)(distance*Math.sin(radianOrientation)));
 	}
-	/**		System.out.println("("+(int)x+","+(int)y+") "+orientation+"°");
-
+	/**	
 	 * Rotates the robot's heading by the specified angle.
 	 * 
 	 * @param angle The angle to rotate in degrees.
@@ -225,7 +225,6 @@ public class Position {
 		// Rotate the heading by the given angle
 		orientation += angle;
 		normalizeOrientation();
-		System.out.println("("+(int)x+","+(int)y+") "+orientation+"°");
 	}
 
 	/**
@@ -255,6 +254,9 @@ public class Position {
 			o = a;
 		return (int)(o/Math.cos(teta_0))-CAPTER_DISTANCE;
 	}
+	/**
+	 * Update the x coordinate when the robot find a white line to limit disorientation
+	 */
 	public void majWhiteLine() {
 		x = goal=='g'?(LEFT_WHITE_LINE+200):(RIGHT_WHITE_LINE-200);
 	}

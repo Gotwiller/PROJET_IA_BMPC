@@ -40,14 +40,13 @@ public class UltrasonSensor extends EV3UltrasonicSensor {
 	 *     		2 = puck
 	 */
 	public int clarifySuspectDetection(int expectedDistance) {
-	int detected = getDetectedDistance(), erreur = 50;
-	Delay.msDelay(300);
-	int detected2 = getDetectedDistance();
-	if (expectedDistance >= detected2-erreur && expectedDistance <= detected2+erreur)
-		return 0;
-	if (expectedDistance <= detected2-erreur && expectedDistance >= detected2+erreur && detected >= detected2-erreur && detected <= detected2+ erreur)
-		return 2;
-	else return 1;
+		int detected = getDetectedDistance(), erreur = 50;
+		Delay.msDelay(300);
+		int detected2 = getDetectedDistance();
+		if (expectedDistance >= detected2-erreur && expectedDistance <= detected2+erreur)
+			return 0;
+		if (expectedDistance <= detected2-erreur && expectedDistance >= detected2+erreur && detected >= detected2-erreur && detected <= detected2+ erreur)
+			return 2;
+		else return 1;
 	}
-
 }

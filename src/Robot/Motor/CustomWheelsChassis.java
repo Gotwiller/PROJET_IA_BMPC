@@ -5,12 +5,13 @@ import lejos.robotics.chassis.Wheel;
 import lejos.robotics.chassis.WheeledChassis;
 
 public class CustomWheelsChassis extends WheeledChassis {
-	public static final float WHEEL_OFFSET_VALUE = 61.5f;
-    
-	public CustomWheelsChassis(double wheelDiameter, double TRACK_WIDTH) {
+	private static final float WHEEL_OFFSET_VALUE = 61.5f;
+	private static final int WHEEL_DIAMETER= 56;
+
+	public CustomWheelsChassis() {
 		 super(new Wheel[] {
-				 WheeledChassis.modelWheel(Motor.D, wheelDiameter).offset(-WHEEL_OFFSET_VALUE),
-				 WheeledChassis.modelWheel(Motor.C, wheelDiameter).offset(WHEEL_OFFSET_VALUE)}, 
+				 WheeledChassis.modelWheel(Motor.D, WHEEL_DIAMETER).offset(-WHEEL_OFFSET_VALUE),
+				 WheeledChassis.modelWheel(Motor.C, WHEEL_DIAMETER).offset(WHEEL_OFFSET_VALUE)}, 
 				 WheeledChassis.TYPE_DIFFERENTIAL);
 	}	
 

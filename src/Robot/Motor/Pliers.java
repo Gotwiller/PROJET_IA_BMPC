@@ -5,7 +5,7 @@ import lejos.hardware.motor.NXTRegulatedMotor;
 public class Pliers {
 	
 	private NXTRegulatedMotor motor;
-	boolean closed;
+	private boolean closed;
 	
 	public Pliers(NXTRegulatedMotor motor) {
 		this.motor = motor;
@@ -31,18 +31,6 @@ public class Pliers {
 			closed = false;
 		}
 	}
-	/**
-	 * Open the pliers. You can force them to open.
-	 * 
-	 * @param force Forced opening
-	 */
-	public void openDesyncr() {
-		if (closed) {
-			motor.rotate(360*3);
-			closed = false;
-		}
-	}
-	
 	/**
 	 * Close the pliers.
 	 */
